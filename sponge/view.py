@@ -26,8 +26,6 @@ import StringIO
 
 from genshi.template import TemplateLoader
 
-base_path = cherrypy.config['image.dir']
-
 def make_url(url):
     if not isinstance(url, basestring):
         raise TypeError('sponge.view.make_url ' \
@@ -80,7 +78,7 @@ def render_html(filename, context, template_path=None):
 
 
 
-def jpeg(path, base_path=base_path):
+def jpeg(path, base_path=None):
     if not isinstance(path, basestring):
         raise TypeError('jpeg() takes a string as parameter, got %r.' % path)
     fullpath = os.path.join(base_path, path)
@@ -89,6 +87,9 @@ def jpeg(path, base_path=base_path):
     except IOError, e:
         cherrypy.response.status = 404
         return unicode(e)
+
+    if not base_path:
+        base_path = cherrypy.config['image.dir']
 
     sfile = StringIO.StringIO()
     img.save(sfile, "JPEG", quality=100)
@@ -135,7 +136,8 @@ def picture(path,
             crop=True,
             center=True,
             mask=None,
-            background=0xffffff):
+            background=0xffffff,
+            base_path=None):
 
     if not isinstance(path, basestring):
         raise TypeError('picture() takes a string as path parameter, got %r.' % path)
@@ -145,6 +147,9 @@ def picture(path,
 
     if not isinstance(height, int):
         raise TypeError('picture() takes a integer as height parameter, got %r.' % height)
+
+    if not base_path:
+        base_path = cherrypy.config['image.dir']
 
     wished_size = width, height
     img = Image.open(os.path.join(base_path, path))

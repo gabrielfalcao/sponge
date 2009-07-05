@@ -99,6 +99,8 @@ def test_jpeg_success():
     StringIO = view.StringIO
     view.StringIO = stringio_module_mock
     view.Image = pil_mock
+    cherrypy.config['image.dir'] = path
+
     return_got = view.jpeg(path)
 
     pil_mock.verify()
@@ -111,6 +113,7 @@ def test_jpeg_success():
 
     view.Image = Image
     view.StringIO = StringIO
+    del cherrypy.config['image.dir']
 
 def test_jpeg_return_string_when_file_not_found():
     filename = 'foo-file.jpg'
@@ -166,13 +169,12 @@ def test_picture_with_crop_true_will_crop_to_fit():
 
     Image = view.Image
     crop_to_fit = view.crop_to_fit
-    old_basepath = view.base_path
     StringIO = view.StringIO
 
     functions_mock = Mock()
     functions_mock.expects(once()).crop_to_fit(eq(img_mock), eq((100, 100))).will(return_value(img_mock))
     view.Image = pil_mock
-    view.base_path = base_path
+    cherrypy.config['image.dir'] = base_path
     view.StringIO = stringio_module_mock
     view.crop_to_fit = functions_mock.crop_to_fit
     pil_mock.expects(once()).open(eq(join(base_path, path))).will(return_value(img_mock))
@@ -186,7 +188,7 @@ def test_picture_with_crop_true_will_crop_to_fit():
     functions_mock.verify()
     view.Image = Image
     view.crop_to_fit = crop_to_fit
-    view.base_path = old_basepath
+    del cherrypy.config['image.dir']
     view.StringIO = StringIO
 
     assert ret == return_mock, "Expected %r. Got %r." % (return_mock, ret)
@@ -207,11 +209,10 @@ def test_picture_with_center_true_will_create_new_image_and_paste():
     stringio_module_mock.expects(once()).StringIO().will(return_value(stringio_mock))
 
     Image = view.Image
-    old_basepath = view.base_path
     StringIO = view.StringIO
 
     view.Image = pil_mock
-    view.base_path = base_path
+    cherrypy.config['image.dir'] = base_path
     view.StringIO = stringio_module_mock
 
     new_img_mock = Mock()
@@ -230,6 +231,6 @@ def test_picture_with_center_true_will_create_new_image_and_paste():
     stringio_module_mock.verify()
 
     view.Image = Image
-    view.base_path = old_basepath
     view.StringIO = StringIO
+    del cherrypy.config['image.dir']
     assert ret == return_mock, "Expected %r. Got %r." % (return_mock, ret)

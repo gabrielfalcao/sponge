@@ -21,7 +21,7 @@ import re
 import Image
 import cherrypy
 
-from sponge.views import render_html, jpeg, picture
+from sponge.view import jpeg, picture
 
 class ImageHandler(object):
     exposed = True
@@ -31,13 +31,16 @@ class ImageHandler(object):
             cherrypy.response.status = 404
             return "not found"
 
-        image = jpeg(path="/".join(args), **kw)
+        image = jpeg(path="/".join(args))
 
         if len(args) >= 3 and args[0] == 'crop':
             proportion = re.match(r'(?P<width>\d+)x(?P<height>\d+)', args[1])
             if proportion:
                 width = int(proportion.group('width'))
                 height = int(proportion.group('height'))
-                return picture("/".join(args[2:]), width, height)
+
+                return picture(path="/".join(args[2:]),
+                               width=width,
+                               height=height)
 
         return image
