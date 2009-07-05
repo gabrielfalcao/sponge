@@ -23,6 +23,7 @@ from os.path import join
 from sponge import view
 from utils import assert_raises
 from pmock import *
+from mox import Mox
 
 def test_view_has_make_url_function():
     assert hasattr(view, 'make_url'), 'sponge.view should have the function make_url'
@@ -80,39 +81,35 @@ def test_jpeg_param_should_be_string():
     assert_raises(TypeError, view.jpeg, None, exc_pattern=r'jpeg.. takes a string as parameter, got None.')
 
 def test_jpeg_success():
+    mox = Mox()
+
     path = '/path/to/mocked/img.jpg'
-    img_mock = Mock()
-    pil_mock = Mock()
-    stringio_module_mock = Mock()
-    stringio_mock = Mock()
-    return_mock = Mock()
 
-    stringio_mock.expects(once()).getvalue().will(return_value(return_mock))
+    mox.StubOutWithMock(view, 'Image')
+    mox.StubOutWithMock(view, 'StringIO')
 
-    stringio_module_mock.expects(once()).StringIO().will(return_value(stringio_mock))
+    stringio_mock = mox.CreateMockAnything()
+    return_mock = mox.CreateMockAnything()
+    img_mock = mox.CreateMockAnything()
 
-    pil_mock.expects(once()).open(eq(path)).will(return_value(img_mock))
+    stringio_mock.getvalue().AndReturn(return_mock)
 
-    img_mock.expects(once()).save(eq(stringio_mock), eq("JPEG"), quality=eq(100))
+    view.StringIO.StringIO().AndReturn(stringio_mock)
+    view.Image.open(path).AndReturn(img_mock)
 
-    Image = view.Image
-    StringIO = view.StringIO
-    view.StringIO = stringio_module_mock
-    view.Image = pil_mock
+    img_mock.save(stringio_mock, "JPEG", quality=100)
+
     cherrypy.config['image.dir'] = path
 
-    return_got = view.jpeg(path)
+    mox.ReplayAll()
 
-    pil_mock.verify()
-    stringio_module_mock.verify()
-    img_mock.verify()
-    stringio_mock.verify()
+    return_got = view.jpeg(path)
     assert return_got == return_mock, 'The return of view.jpeg() should be %r, got %r' % (return_mock, return_got)
     mime = cherrypy.response.headers['Content-type']
     assert mime == 'image/jpeg', 'The response header "Content-type" should be image/jpeg, but got %r' % mime
 
-    view.Image = Image
-    view.StringIO = StringIO
+    mox.VerifyAll()
+
     del cherrypy.config['image.dir']
 
 def test_jpeg_return_string_when_file_not_found():
