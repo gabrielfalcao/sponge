@@ -115,11 +115,6 @@ def crop_to_fit(img, output_size):
         crop_width = int((aspect_ratio * float(live_size[1])) + 0.5)
         crop_height = live_size[1]
 
-    else:
-        #live_area is taller than what's needed, crop the top and bottom
-        crop_width = live_size[0]
-        crop_height = int((float(live_size[0]) / aspect_ratio) + 0.5)
-
     # make the crop
     left_side = int(live_area[0] + (float(live_size[0] - crop_width) * 0.5))
     top_side = int(live_area[1] + (float(live_size[1] - crop_height) * 0.5))
