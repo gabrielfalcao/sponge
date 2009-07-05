@@ -17,6 +17,7 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+import re
 import Image
 import cherrypy
 
@@ -70,6 +71,50 @@ def test_make_url_with_trailling_slash_on_both():
 def test_view_has_function_render_html():
     assert hasattr(view, 'render_html'), 'sponge.view should have the function render_html'
     assert callable(view.render_html), 'sponge.view.render_html should be callable'
+
+def test_views_render_html_raises_filename_nonstring():
+    assert_raises(TypeError,
+                  view.render_html,
+                  None,
+                  {},
+                  exc_pattern=r'sponge.view.render_html ' \
+                  'takes a string as filename param, got None.')
+    assert_raises(TypeError,
+                  view.render_html,
+                  5,
+                  {},
+                  exc_pattern=r'sponge.view.render_html ' \
+                  'takes a string as filename param, got 5.')
+
+def test_views_render_html_raises_filename_empty():
+    assert_raises(TypeError,
+                  view.render_html,
+                  '',
+                  {},
+                  exc_pattern=r'sponge.view.render_html ' \
+                  'filename param can not be empty.')
+
+def test_views_render_html_raises_context_nondict():
+    assert_raises(TypeError,
+                  view.render_html,
+                  'index.html',
+                  None,
+                  exc_pattern=r'sponge.view.render_html ' \
+                  'takes a dict as context param, got None.')
+    assert_raises(TypeError,
+                  view.render_html,
+                  'index.html',
+                  5,
+                  exc_pattern=r'sponge.view.render_html ' \
+                  'takes a dict as context param, got 5.')
+
+def test_views_render_html_raises_context_already_have_make_url():
+    assert_raises(KeyError,
+                  view.render_html,
+                  'index.html',
+                  {'make_url': "ss"},
+                  exc_pattern=r'The key "make_url" is already in ' \
+                  'template context as[:] %s' % re.escape(repr(view.make_url)))
 
 def test_view_has_function_jpeg():
     assert hasattr(view, 'jpeg'), 'sponge.view should have the function jpeg'

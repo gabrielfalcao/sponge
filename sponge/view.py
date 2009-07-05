@@ -54,7 +54,7 @@ def render_html(filename, context, template_path=None):
 
     if 'make_url' in context.keys():
         msg = 'The key "make_url" is already in ' \
-              'template context as: %r' % context['make_url']
+              'template context as: %r' % make_url
         raise KeyError(msg)
 
     if template_path is None:
