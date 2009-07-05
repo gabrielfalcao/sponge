@@ -19,6 +19,6 @@ functional:
 	@echo "Done."
 
 build: test
-        @echo "Building sponge"
-        @python setup.py build
-        @echo "Done."
+	@echo "Building sponge"
+	@python setup.py build
+	@echo "Done."
