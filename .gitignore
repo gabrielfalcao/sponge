@@ -1,0 +1,5 @@
+*.pyc
+.coverage
+build
+.ropeproject
+docs/_build
