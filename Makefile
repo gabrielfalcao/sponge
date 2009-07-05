@@ -17,3 +17,8 @@ functional:
 	@echo "Running functional tests ..."
 	@nosetests -s --with-coverage --cover-package=sponge tests/functional
 	@echo "Done."
+
+build: test
+        @echo "Building sponge"
+        @python setup.py build
+        @echo "Done."
