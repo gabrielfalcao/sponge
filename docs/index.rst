@@ -1,14 +1,20 @@
-.. _index:
+.. Sponge documentation master file, created by
+   sphinx-quickstart on Sat Jul  4 22:30:30 2009.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-====================
-Sponge Documentation
-====================
+Welcome to Sponge's documentation!
+==================================
 
-Since Sponge is built on top of CherryPy, its features are just little
-helpers.
+Contents:
 
-For now, Sponge gives you a controller to serve dinamic-sized images
-and some view helpers.
+.. toctree::
+   :maxdepth: 2
 
-:ref:`Controllers <controller>` |
-:ref:`Views <view>` |
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
