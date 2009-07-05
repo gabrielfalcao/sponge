@@ -154,43 +154,36 @@ def test_picture_third_param_should_be_int():
 def test_picture_with_crop_true_will_crop_to_fit():
     base_path = '/basepath/for/test_picture_success'
     path = 'my_picture.jpg'
-    img_mock = Mock()
+
+    mox = Mox()
+
+    mox.StubOutWithMock(view, 'Image')
+    mox.StubOutWithMock(view, 'StringIO')
+    mox.StubOutWithMock(view, 'crop_to_fit')
+
+    img_mock = mox.CreateMockAnything()
     img_mock.size = 300, 300
-    pil_mock = Mock()
 
-    stringio_module_mock = Mock()
-    stringio_mock = Mock()
-    return_mock = Mock()
+    stringio_mock = mox.CreateMockAnything()
+    return_mock = mox.CreateMockAnything()
 
-    stringio_mock.expects(once()).getvalue().will(return_value(return_mock))
+    stringio_mock.getvalue().AndReturn(return_mock)
 
-    stringio_module_mock.expects(once()).StringIO().will(return_value(stringio_mock))
+    view.StringIO.StringIO().AndReturn(stringio_mock)
 
-    Image = view.Image
-    crop_to_fit = view.crop_to_fit
-    StringIO = view.StringIO
-
-    functions_mock = Mock()
-    functions_mock.expects(once()).crop_to_fit(eq(img_mock), eq((100, 100))).will(return_value(img_mock))
-    view.Image = pil_mock
     cherrypy.config['image.dir'] = base_path
-    view.StringIO = stringio_module_mock
-    view.crop_to_fit = functions_mock.crop_to_fit
-    pil_mock.expects(once()).open(eq(join(base_path, path))).will(return_value(img_mock))
-    img_mock.expects(once()).save(eq(stringio_mock), eq('JPEG'), quality=eq(100))
+
+    view.Image.open(join(base_path, path)).AndReturn(img_mock)
+    img_mock.save(stringio_mock, 'JPEG', quality=100)
+    view.crop_to_fit(img_mock, (100, 100)).AndReturn(img_mock)
+
+    mox.ReplayAll()
+
     ret = view.picture(path, 100, 100, crop=True, center=False)
-
-    pil_mock.verify()
-    img_mock.verify()
-    stringio_mock.verify()
-    stringio_module_mock.verify()
-    functions_mock.verify()
-    view.Image = Image
-    view.crop_to_fit = crop_to_fit
-    del cherrypy.config['image.dir']
-    view.StringIO = StringIO
-
     assert ret == return_mock, "Expected %r. Got %r." % (return_mock, ret)
+
+    mox.VerifyAll()
+    del cherrypy.config['image.dir']
 
 def test_picture_with_center_true_will_create_new_image_and_paste():
     base_path = '/base/path'
