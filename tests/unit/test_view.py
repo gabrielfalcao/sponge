@@ -19,11 +19,12 @@
 # Boston, MA 02111-1307, USA.
 import Image
 import cherrypy
-from os.path import join
-from sponge import view
-from utils import assert_raises
-from pmock import *
+
 from mox import Mox
+from utils import assert_raises
+from os.path import join
+
+from sponge import view
 
 def test_view_has_make_url_function():
     assert hasattr(view, 'make_url'), 'sponge.view should have the function make_url'
