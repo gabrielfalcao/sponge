@@ -130,7 +130,6 @@ def picture(path,
             height,
             crop=True,
             center=True,
-            mask=None,
             background=0xffffff,
             base_path=None):
 
@@ -159,10 +158,6 @@ def picture(path,
         left = (width - ow) / 2
         top = (height - oh) / 2
         img.paste(old_img, (left, top))
-
-    if mask:
-        mask_img = Image.open(mask)
-        img.paste(mask_img, None, mask_img)
 
     sfile = StringIO.StringIO()
     img.save(sfile, "JPEG", quality=100)
