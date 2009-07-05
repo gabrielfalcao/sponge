@@ -115,17 +115,19 @@ def test_jpeg_success():
 def test_jpeg_return_string_when_file_not_found():
     filename = 'foo-file.jpg'
     path = join('bazbar', filename)
-    pil_mock = Mock()
-    Image = view.Image
-    view.Image = pil_mock
+    mox = Mox()
 
-    pil_mock.expects(once()).open(eq(path)).will(raise_exception(IOError('File not found: foo-file.jpg')))
+    mox.StubOutWithMock(view, 'Image')
+
+    view.Image.open(path).AndRaise(IOError('File not found: foo-file.jpg'))
+
+    mox.ReplayAll()
     ret = view.jpeg(filename, base_path='bazbar')
-    pil_mock.verify()
 
     assert isinstance(ret, unicode), 'The return value should be unicode, but is %r' % type(ret)
     assert ret == 'File not found: foo-file.jpg', 'Wrong error description: %r' % ret
-    view.Image = Image
+
+    mox.VerifyAll()
 
 def test_crop_to_fit_bigger():
     img = Image.new('RGBA', (653, 342))
