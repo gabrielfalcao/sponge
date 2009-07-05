@@ -168,4 +168,3 @@ def picture(path,
     img.save(sfile, "JPEG", quality=100)
     cherrypy.response.headers['Content-type'] = "image/jpeg"
     return sfile.getvalue()
-
