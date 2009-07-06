@@ -181,9 +181,9 @@ def test_crop_to_fit_bigger():
     assert ret.size == (320, 240), 'Got expected size 320x240, got %rx%r.' % ret.size
 
 def test_crop_to_fit_lower():
-    img = Image.new('RGBA', (300, 200))
-    ret = view.crop_to_fit(img, (600, 500))
-    assert ret.size == (600, 500), 'Got expected size 320x240, got %rx%r.' % ret.size
+    img = Image.new('RGBA', (500, 750))
+    ret = view.crop_to_fit(img, (320, 240))
+    assert ret.size == (320, 240), 'Got expected size 320x240, got %rx%r.' % ret.size
 
 def test_picture_takes_3_parameters():
     assert_raises(TypeError, view.picture, exc_pattern=r'picture.. takes at least 3 arguments .0 given.')
