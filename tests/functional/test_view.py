@@ -23,6 +23,8 @@ from sponge import view
 from utils import assert_raises
 
 templates = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+images = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
+
 def test_render_html_param_filename_takes_string():
     assert_raises(TypeError, view.render_html, None, None,
                   exc_pattern=r'sponge.view.render_html ' \
@@ -71,3 +73,9 @@ def test_render_html():
     got = view.render_html('test1.html', dict(title='foo', header='bar'), template_path=templates)
     assert '<title>My title: foo</title>' in got
     assert '<h1>My header: bar</h1>' in got
+
+def test_jpeg():
+    cherrypy.config['image.dir'] = images
+    got = view.jpeg('2823371.jpg')
+    assert isinstance(got, basestring), 'Expected a string, got %r' % got
+
