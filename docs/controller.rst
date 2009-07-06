@@ -49,7 +49,7 @@ Required arguments
 ------------------
 
 ``object_list``
-    A list, tuple, Django ``QuerySet``, or other sliceable object with a
+    A list, tuple or other sliceable object with a
     ``count()`` or ``__len__()`` method.
 
 ``per_page``
@@ -88,15 +88,6 @@ Attributes
 
     The total number of objects, across all pages.
 
-    .. note::
-
-        When determining the number of objects contained in ``object_list``,
-        ``Paginator`` will first try calling ``object_list.count()``. If
-        ``object_list`` has no ``count()`` method, then ``Paginator`` will
-        fallback to using ``object_list.__len__()``. This allows objects, such
-        as Django's ``QuerySet``, to use a more efficient ``count()`` method
-        when available.
-
 .. attribute:: Paginator.num_pages
 
     The total number of pages.
@@ -106,7 +97,7 @@ Attributes
     A 1-based range of page numbers, e.g., ``[1, 2, 3, 4]``.
 
 ``InvalidPage`` exceptions
-==========================
+--------------------------
 
 The ``page()`` method raises ``InvalidPage`` if the requested page is invalid
 (i.e., not an integer) or contains no objects. Generally, it's enough to trap
@@ -125,7 +116,7 @@ them both with a simple ``except InvalidPage``.
 
 
 ``Page`` objects
-================
+----------------
 
 .. class:: Page(object_list, number, paginator):
 
