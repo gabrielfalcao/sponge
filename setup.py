@@ -23,7 +23,7 @@ import sys
 from setuptools import setup, find_packages
 
 setup(name='Sponge',
-    version='0.1.1',
+    version='0.1.2',
     description='A web framework aiming to get things dry, built on top of CherryPy and Genshi',
     author=u'Gabriel Falcão',
     author_email='gabriel@nacaolivre.org',

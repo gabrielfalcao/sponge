@@ -1,8 +1,14 @@
-python-sponge (1.1) experimental; urgency=low
+python-sponge (0.1.2) experimental; urgency=low
+
+  * New release, minor bug fix.
+
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Sun, 05 Jul 2009 21:10:10 -0300
+
+python-sponge (0.1.1) experimental; urgency=low
 
   * New release.
 
- -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Sun, 05 Jul 2009 02:23:47 -0300
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Sun, 05 Jul 2009 21:09:52 -0300
 
 python-sponge (0.1) experimental; urgency=low
 
