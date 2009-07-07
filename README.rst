@@ -38,4 +38,4 @@ Fixing bugs
 .. _CherryPy: http://www.cherrypy.org/
 .. _Genshi: http://genshi.edgewall.org/
 .. _nose: http://code.google.com/p/python-nose/
-.. _mox: http://code.google.com/p/pymox/
+.. _mox: http://code.google.com/p/pymox/test
