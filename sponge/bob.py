@@ -21,27 +21,31 @@
 
 import sys
 import os
-import sys, optparse
 
-#from sponge import version
+#from sponge import __version__ as version
 version = "FAKE"
 
 class Bob(object):
     '''Sponge Bob is the responsible for managing the user's application and its modules.'''
 
+    def __init__(self, parser=None):
+        self.parser = parser
+        if not self.parser:
+            import optparse
+            usage = "\n>>> " + Bob.__doc__ + " <<<\n\nTo use type %prog [options]" \
+                                             " or %prog -h (--help) for help with" \
+                                             " the available options"
+            self.parser = optparse.OptionParser(usage=usage, description=__doc__, version=version)
+
     def run(self):
-        options, args = self.parse_args()
-        print options
-        print args
+        options, args = self.parser.parse_args()
+
+        if args and args[0] == 'create':
+            self.create_project(options, args[1])
         return 0
 
-    def parse_args(self):
-        usage = "\n>>> " + Bob.__doc__ + " <<<\n\nTo use type %prog [options] or %prog -h (--help) for help with the available options"
-        parser = optparse.OptionParser(usage=usage, description=__doc__, version=version)
-        #parser.add_option("-p", "--pattern", dest="pattern", default="*.acc", help="File pattern. Defines which files will get executed [default: %default].")
-
-        options, args = parser.parse_args()
-        return (options, args)
+    def create_project(self, options, project_name):
+        pass
 
 if __name__ == "__main__":
     bob = Bob()
