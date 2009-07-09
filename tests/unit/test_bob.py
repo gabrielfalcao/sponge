@@ -21,6 +21,9 @@
 
 import optparse
 
+import os
+from os.path import abspath, join, dirname
+
 from mox import Mox
 
 from sponge.bob import *
@@ -42,3 +45,108 @@ def test_run():
     b.run()
 
     mox.VerifyAll()
+
+def test_create_project_raises_if_folder_already_exists():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+
+    options_mock = mox.CreateMockAnything()
+    options_mock.project_dir = "something"
+
+    file_system = mox.CreateMockAnything()
+    file_system.join("something", "some project").AndReturn("something/some project")
+    file_system.abspath("something/some project").AndReturn("/something/some project")
+    file_system.exists("/something/some project").AndReturn(True)
+
+    mox.ReplayAll()
+
+    b = Bob(parser=mock_parser, fs=file_system)
+    try:
+        b.create_project(options_mock,"some project")
+    except Bob.ProjectFolderExists, err:
+        assert str(err) == "There is a folder at '/something/some project' already, thus making it impossible to create a project there."
+        mox.VerifyAll()
+        return
+
+    assert False, "Should not have reached this far."
+
+def test_create_project_creates_folder_if_one_does_not_exist():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+
+    options_mock = mox.CreateMockAnything()
+    options_mock.project_dir = "something"
+
+    file_system = mox.CreateMockAnything()
+    file_system.join("something", "some project").AndReturn("something/some project")
+    file_system.abspath("something/some project").AndReturn("/something/some project")
+    file_system.exists("/something/some project").AndReturn(False)
+    file_system.mkdir("/something/some project")
+
+    b = Bob(parser=mock_parser, fs=file_system)
+    mox.StubOutWithMock(b, 'create_project_structure')
+    b.create_project_structure(options_mock, "some project", "/something/some project")
+
+    mox.ReplayAll()
+
+    try:
+        b.create_project(options_mock,"some project")
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_create_project_calls_create_structure():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+
+    options_mock = mox.CreateMockAnything()
+    options_mock.project_dir = "something"
+
+    file_system = mox.CreateMockAnything()
+    file_system.join("something", "some project").AndReturn("something/some project")
+    file_system.abspath("something/some project").AndReturn("/something/some project")
+    file_system.exists("/something/some project").AndReturn(False)
+    file_system.mkdir("/something/some project")
+
+    b = Bob(parser=mock_parser, fs=file_system)
+    mox.StubOutWithMock(b, 'create_project_structure')
+    b.create_project_structure(options_mock, "some project", "/something/some project")
+    mox.ReplayAll()
+
+    try:
+        b.create_project(options_mock,"some project")
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_create_structure():
+    mox = Mox()
+    mock_parser = mox.CreateMockAnything()
+
+    options_mock = mox.CreateMockAnything()
+    options_mock.project_dir = "something"
+
+    file_system = mox.CreateMockAnything()
+
+    b = Bob(parser=mock_parser, fs=file_system)
+
+    path = abspath(join(dirname(__file__), "..", "..", "sponge"))
+
+    file_system.dirname('/home/heynemann/development/sponge/sponge/bob.pyc').AndReturn("/home/heynemann/development/sponge/sponge")
+    file_system.join(path, "templates", "create_project").AndReturn("templates/create_project")
+    file_system.abspath("templates/create_project").AndReturn("/templates/create_project")
+
+    file_system.locate(path="/templates/create_project", match="*.*", recursive=True).AndReturn(["/templates/create_project/some_file.txt"])
+    file_system.rebase(destiny_folder='/something/some project', origin_folder='/templates/create_project', path='/templates/create_project/some_file.txt').AndReturn("/something/some project/some_file.txt")
+
+    file_system.read_all(encoding='utf-8', path='/templates/create_project/some_file.txt').AndReturn("some template")
+    file_system.write_all(contents='some template', create_dir=True, encoding='utf-8', path='/something/some project/some_file.txt')
+
+    mox.ReplayAll()
+
+    b.create_project_structure(options_mock, "some project", "/something/some project")
+    mox.VerifyAll()
+
