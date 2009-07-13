@@ -133,9 +133,12 @@ def test_create_structure():
 
     b = Bob(parser=mock_parser, fs=file_system)
 
-    path = abspath(join(dirname(__file__), "..", "..", "sponge"))
+    file_path = Bob.get_file_path
+    Bob.get_file_path = lambda self: "fake file"
 
-    file_system.dirname('/home/heynemann/development/sponge/sponge/bob.pyc').AndReturn("/home/heynemann/development/sponge/sponge")
+    path = "/some/path/to/fake file"
+
+    file_system.dirname('fake file').AndReturn("/some/path/to/fake file")
     file_system.join(path, "templates", "create_project").AndReturn("templates/create_project")
     file_system.abspath("templates/create_project").AndReturn("/templates/create_project")
 

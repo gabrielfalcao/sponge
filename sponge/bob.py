@@ -66,12 +66,15 @@ class Bob(object):
         self.create_project_structure(options, project_name, path)
 
     def create_project_structure(self, options, project_name, project_path):
-        template_folder = self.fs.abspath(self.fs.join(self.fs.dirname(__file__), "templates", "create_project"))
+        template_folder = self.fs.abspath(self.fs.join(self.fs.dirname(self.get_file_path()), "templates", "create_project"))
 
         for f in self.fs.locate(path=template_folder, match="*.*", recursive=True):
             new_path = self.fs.rebase(path=f, origin_folder=template_folder, destiny_folder=project_path)
             t = Template(self.fs.read_all(path=f, encoding='utf-8'), searchList=[])
             self.fs.write_all(path=new_path, contents=str(t), encoding='utf-8', create_dir=True)
+
+    def get_file_path(self):
+        return __file__
 
 if __name__ == "__main__":
     bob = Bob()
