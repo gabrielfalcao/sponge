@@ -23,8 +23,7 @@ import sys
 import os
 from Cheetah.Template import Template
 
-#from sponge import __version__ as version
-version = "FAKE"
+from sponge import __version__ as version
 
 class ProjectFolderExistsError(ValueError):
     pass
