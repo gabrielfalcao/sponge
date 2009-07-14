@@ -17,66 +17,11 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
-
 import os
 import Image
 import ImageDraw
 import cherrypy
 import StringIO
-
-from genshi.template import TemplateLoader
-
-def make_url(url):
-    if not isinstance(url, basestring):
-        raise TypeError('sponge.view.make_url ' \
-                        'takes a string as param, got %r.' % url)
-    if url.startswith('/'):
-        url = url[1:]
-
-    base = cherrypy.request.base
-    if base.endswith('/'):
-        base = base[:-1]
-
-    return "%s/%s" % (base, url)
-
-def render_html(filename, context, template_path=None):
-    if not isinstance(filename, basestring):
-        raise TypeError('sponge.view.render_html ' \
-                        'takes a string as filename param, got %r.' % filename)
-
-    if not len(filename):
-        raise TypeError('sponge.view.render_html ' \
-                        'filename param can not be empty.')
-
-    if not isinstance(context, dict):
-        raise TypeError('sponge.view.render_html ' \
-                        'takes a dict as context param, got %r.' % context)
-
-    if 'make_url' in context.keys():
-        msg = 'The key "make_url" is already in ' \
-              'template context as: %r' % make_url
-        raise KeyError(msg)
-
-    if template_path is None:
-        try:
-            template_path = cherrypy.config['view.dir']
-        except KeyError:
-            raise LookupError('You must configure "view.dir" string in ' \
-                              'CherryPy or pass template_path param to render_html')
-
-
-    elif not isinstance(template_path, basestring):
-        raise TypeError('sponge.view.render_html ' \
-                        'takes a string as template_path param, got %r.' % template_path)
-
-    context['make_url'] = make_url
-    loader = TemplateLoader(template_path,
-                            auto_reload=True)
-    template = loader.load(filename)
-    generator = template.generate(**context)
-    return generator.render('html', doctype='html')
-
-
 
 def jpeg(path, base_path=None):
     if not isinstance(path, basestring):

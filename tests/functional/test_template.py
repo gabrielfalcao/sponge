@@ -19,63 +19,56 @@
 # Boston, MA 02111-1307, USA.
 import os
 import cherrypy
-from sponge import view
+from sponge import template
 from utils import assert_raises
 
 templates = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
-images = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 def test_render_html_param_filename_takes_string():
-    assert_raises(TypeError, view.render_html, None, None,
-                  exc_pattern=r'sponge.view.render_html ' \
+    assert_raises(TypeError, template.render_html, None, None,
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a string as filename param, got None.')
-    assert_raises(TypeError, view.render_html, 5, None,
-                  exc_pattern=r'sponge.view.render_html ' \
+    assert_raises(TypeError, template.render_html, 5, None,
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a string as filename param, got 5.')
 
 def test_render_html_param_filename_should_not_be_empty():
-    assert_raises(TypeError, view.render_html, '', None,
-                  exc_pattern=r'sponge.view.render_html ' \
+    assert_raises(TypeError, template.render_html, '', None,
+                  exc_pattern=r'sponge.template.render_html ' \
                   'filename param can not be empty.')
 
 def test_render_html_param_context_takes_dict():
-    assert_raises(TypeError, view.render_html, 'index.html', None,
-                  exc_pattern=r'sponge.view.render_html ' \
+    assert_raises(TypeError, template.render_html, 'index.html', None,
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a dict as context param, got None.')
 
 def test_render_html_complains_cherrypy_not_configured_when_no_template_path_specified():
-    assert_raises(LookupError, view.render_html, 'index.html', {},
-                  exc_pattern=r'You must configure "view.dir" ' \
+    assert_raises(LookupError, template.render_html, 'index.html', {},
+                  exc_pattern=r'You must configure "template.dir" ' \
                   'string in CherryPy or pass template_path param ' \
                   'to render_html')
 
 def test_render_html_param_template_path_takes_string():
-    assert_raises(TypeError, view.render_html, 'index.html', {},
+    assert_raises(TypeError, template.render_html, 'index.html', {},
                   template_path=1,
-                  exc_pattern=r'sponge.view.render_html ' \
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a string as template_path param, got 1.')
-    assert_raises(TypeError, view.render_html, 'index.html', {},
+    assert_raises(TypeError, template.render_html, 'index.html', {},
                   template_path={},
-                  exc_pattern=r'sponge.view.render_html ' \
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a string as template_path param, got {}.')
 
 def test_render_html_param_template_path_takes_string():
-    assert_raises(TypeError, view.render_html, 'index.html', {},
+    assert_raises(TypeError, template.render_html, 'index.html', {},
                   template_path=1,
-                  exc_pattern=r'sponge.view.render_html ' \
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a string as template_path param, got 1.')
-    assert_raises(TypeError, view.render_html, 'index.html', {},
+    assert_raises(TypeError, template.render_html, 'index.html', {},
                   template_path={},
-                  exc_pattern=r'sponge.view.render_html ' \
+                  exc_pattern=r'sponge.template.render_html ' \
                   'takes a string as template_path param, got {}.')
 
 def test_render_html():
-    got = view.render_html('test1.html', dict(title='foo', header='bar'), template_path=templates)
+    got = template.render_html('test1.html', dict(title='foo', header='bar'), template_path=templates)
     assert '<title>My title: foo</title>' in got
     assert '<h1>My header: bar</h1>' in got
-
-def test_jpeg():
-    cherrypy.config['image.dir'] = images
-    got = view.jpeg('2823371.jpg')
-    assert isinstance(got, basestring), 'Expected a string, got %r' % got
-

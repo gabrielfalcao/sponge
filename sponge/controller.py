@@ -23,7 +23,7 @@ import cherrypy
 
 from math import ceil
 
-from sponge.view import jpeg, picture
+from sponge.image import jpeg, picture
 
 class ImageHandler(object):
     exposed = True
