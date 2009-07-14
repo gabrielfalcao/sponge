@@ -101,7 +101,6 @@ def test_create_project_calls_create_structure():
     mox = Mox()
 
     mock_parser = mox.CreateMockAnything()
-
     options_mock = mox.CreateMockAnything()
     options_mock.project_dir = "something"
 
@@ -153,3 +152,25 @@ def test_create_structure():
     b.create_project_structure(options_mock, "some project", "/something/some project")
     mox.VerifyAll()
 
+def test_create_project_through_run():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+    mock_parser.parse_args().AndReturn(('should_be_options', ['create', 'should_be_project_name']))
+
+    options_mock = mox.CreateMockAnything()
+    options_mock.project_dir = "something"
+
+    file_system = mox.CreateMockAnything()
+
+    b = Bob(parser=mock_parser, fs=file_system)
+    b.create_project = mox.CreateMockAnything()
+    b.create_project('should_be_options', 'should_be_project_name')
+    mox.ReplayAll()
+
+    try:
+        got = b.run()
+        assert got is 0, 'Expected 0, got %s' % repr(got)
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()

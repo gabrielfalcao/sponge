@@ -29,7 +29,7 @@ class ProjectFolderExistsError(ValueError):
     pass
 
 class Bob(object):
-    '''Sponge Bob is the responsible for managing the user's application and its modules.'''
+    """Sponge Bob is the responsible for managing the user's application and its modules."""
 
     ProjectFolderExists = ProjectFolderExistsError
 
@@ -37,10 +37,12 @@ class Bob(object):
         self.parser = parser
         if not self.parser:
             import optparse
-            usage = "\n>>> " + Bob.__doc__ + " <<<\n\nTo use type %prog [options]" \
-                                             " or %prog -h (--help) for help with" \
-                                             " the available options"
-            self.parser = optparse.OptionParser(usage=usage, description=__doc__, version=version)
+            usage = "\n>>> %s <<<\n\nTo use type %%prog [options]" \
+                    " or %%prog -h (--help) for help with" \
+                    " the available options" % self.__doc__
+            self.parser = optparse.OptionParser(usage=usage,
+                                                description=__doc__,
+                                                version=version)
 
         self.fs = fs
         if not self.fs:
