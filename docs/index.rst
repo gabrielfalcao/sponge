@@ -1,7 +1,8 @@
 .. toctree::
    :maxdepth: 2
    Sponge basic setup <configuration>
-   Sponge view helpers <view>
+   Sponge template helpers <templat>
+   Sponge image helpers <image>
    Sponge controller helpers <controller>
 
 ====================
@@ -19,4 +20,5 @@ Reference
 
 * :ref:`Basic Sponge setup <configuration>`
 * :ref:`Controllers <controller>`
-* :ref:`Views <view>`
+* :ref:`Templates <template>`
+* :ref:`Handling Images <image>`
