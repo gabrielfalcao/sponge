@@ -77,6 +77,6 @@ class Bob(object):
     def get_file_path(self):
         return __file__
 
-if __name__ == "__main__":
-    bob = Bob()
+def run(*args, **kw):
+    bob = Bob(*args, **kw)
     sys.exit(bob.run())

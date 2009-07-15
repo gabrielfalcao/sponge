@@ -28,6 +28,11 @@ setup(name='Sponge',
     author=u'Gabriel Falcão',
     author_email='gabriel@nacaolivre.org',
     url='http://sponge.gabrielfalcao.com',
+    entry_points={
+        'console_scripts': [
+            'bob = sponge.bob:run',
+        ]
+    },
     packages=[
           'sponge',
     ],
