@@ -40,3 +40,24 @@ The server will be running as WSGI. Useful for production deployment.
 Example::
 
     run-as: wsgi
+
+full example
+============
+
+This is a full example for a Sponge's possible configuration::
+
+    run-as: standalone # possible values: standalone, wsgi
+    host: 127.0.0.1
+    port: 8080
+    autoreload: true
+    application:
+      path: /home/user/projects/web-app/module
+      template-dir: /home/user/projects/web-app/html
+      image-dir: /home/user/projects/web-app/images
+      classes:
+        SomeController: /
+
+    databases:
+      media: mysql://root@localhost/webapp_media
+      general: postgres://root:p4ssword@localhost/webapp_general
+      metadata: sqlite:///webapp_metadata.db
