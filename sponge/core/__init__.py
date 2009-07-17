@@ -84,18 +84,24 @@ class ConfigParser(object):
             if isinstance(validator, dict):
                 if not isinstance(raw_value, dict):
                     self.raise_invalid(option, value)
-                for key_regex, value_regex in validator.items():
-                    for key, value in raw_value.items():
-                        if not isinstance(value, (basestring, dict)):
-                            self.raise_invalid(key, value)
-                        if isinstance(value, basestring):
-                            if not re.match(key_regex, key):
-                                self.raise_invalid(option, key)
-                            if not re.match(value_regex, value):
-                                self.raise_invalid(key, value)
+                self.validate_dict(option, validator, raw_value)
 
         return True
 
     def validate_optional(self):
         pass
 
+    def validate_dict(self, option, validator, dict_to_validate):
+        for key_regex, value_regex in validator.items():
+            for key, value in dict_to_validate.items():
+                if isinstance(value, dict):
+                    self.validate_dict(key, validator, value)
+
+                elif isinstance(value, basestring):
+                    if not re.match(key_regex, key):
+                        self.raise_invalid(option, key)
+                    if not re.match(value_regex, value):
+                        self.raise_invalid(key, value)
+
+                else:
+                    self.raise_invalid(key, value)

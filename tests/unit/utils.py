@@ -76,11 +76,11 @@ def assert_raises(exception, callable, *args, **kwargs):
                             "does not match '%s': %r"\
                             % (callsig, exc.__class__, exc_pattern.pattern,
                                str(exc))
-    except:
+    except Exception, e:
         exc_info = sys.exc_info()
         print exc_info
         assert False, "%s raised an unexpected exception type: "\
-                  "expected=%s, actual=%s"\
-                  % (callsig, exception, exc_info[0])
+                  "expected=%s, actual=%s (%s)"\
+                  % (callsig, exception, exc_info[0], unicode(e))
     else:
         assert False, "%s did not raise %s" % (callsig, exception)

@@ -30,9 +30,10 @@ FULL_CONFIG_BASE = {
     'host': '0.0.0.0',
     'port': 80,
     'autoreload': False,
-    'application': {
-        'Controller': '/'
-    },
+    'application': {'classes': {'SomeController': '/'},
+                    'image-dir': '/home/user/projects/web-app/images',
+                    'path': '/home/user/projects/web-app/module',
+                    'template-dir': '/home/user/projects/web-app/html'},
     'databases': {
         'general': 'mysql://root@localhost/general'
     }
