@@ -305,6 +305,16 @@ def test_application_invalid_names_starting_with_number():
     assert_invalid_option('application', '3kdjfbsff',
                           cp.validate_mandatory)
 
+def test_application_invalid_values_without_bar_at_start():
+    d = FULL_CONFIG_BASE.copy()
+    d['application'] = {
+        'something': 'asd/',
+    }
+
+    cp = ConfigParser(d)
+    assert_invalid_option('something', 'asd/',
+                          cp.validate_mandatory)
+
 def test_validate_option_application():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
@@ -319,3 +329,13 @@ def test_validate_option_application():
     }
     cp = ConfigParser(d)
     assert cp.validate_mandatory()
+
+def test_validate_sub_options_should_be_dict():
+    d = FULL_CONFIG_BASE.copy()
+    d['application'] = {
+        'classes': 213
+    }
+    cp = ConfigParser(d)
+    assert_invalid_option('classes', '213',
+                          cp.validate_mandatory)
+
