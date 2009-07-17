@@ -86,11 +86,16 @@ def test_config_parser_validate_calls_validation_methods():
     cp.validate()
     mocker.VerifyAll()
 
-def assert_has_method_raise_invalid():
+def test_has_method_raise_invalid():
     assert hasattr(ConfigParser, 'raise_invalid'), \
            'ConfigParser should have the method raise_invalid'
     assert callable(ConfigParser.raise_invalid), \
            'ConfigParser.raise_invalid should be callable'
+
+def test_raise_invalid_raises():
+    cp = ConfigParser({})
+    assert_invalid_option('foo-bar', 'john-doe',
+                          cp.raise_invalid, 'foo-bar', 'john-doe')
 
 def test_validate_mandatory_requires_option_run_as():
     d = FULL_CONFIG_BASE.copy()

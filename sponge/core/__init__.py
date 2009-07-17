@@ -50,6 +50,11 @@ class ConfigParser(object):
         self.validate_mandatory()
         self.validate_optional()
 
+    def raise_invalid(self, option, value):
+        raise InvalidValueError, 'Invalid value in "%s" ' \
+              'option: "%s". Read the Sponge documentation ' \
+              'for more information.' % (option, value)
+
     def validate_mandatory(self):
         keys = self.cdict.keys()
         for option in self.mandatory:
@@ -60,14 +65,11 @@ class ConfigParser(object):
             value = unicode(self.cdict[option])
             if isinstance(validator, list):
                 if value not in validator:
-                    raise InvalidValueError, 'Invalid value in "%s" ' \
-                          'option: "%s". Read the Sponge documentation ' \
-                          'for more information.' % (option, value)
+                    self.raise_invalid(option, value)
+
             if isinstance(validator, basestring):
                 if not re.match(validator, value):
-                    raise InvalidValueError, 'Invalid value in "%s" ' \
-                          'option: "%s". Read the Sponge documentation ' \
-                          'for more information.' % (option, value)
+                    self.raise_invalid(option, value)
 
         return True
 
