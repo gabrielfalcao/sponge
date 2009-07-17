@@ -40,10 +40,10 @@ class ConfigValidator(object):
         'port': r'^\d+$',
         'autoreload': AnyValue(bool),
         'application': {
-            r'^[a-zA-Z-][\w-]*$': r'^[/].*$'
+            r'^[a-zA-Z_-][\w_-]*$': r'^[/].*$'
         },
         'databases': {
-            r'^[a-zA-Z-][\w-]*$': '^.+$'
+            r'^[\w_-]+$': '^.+$'
         }
     }
     def __init__(self, cdict):

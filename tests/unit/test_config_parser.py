@@ -332,10 +332,40 @@ def test_validate_option_application():
 
 def test_validate_sub_options_should_be_dict():
     d = FULL_CONFIG_BASE.copy()
-    d['application'] = {
+    d['databases'] = {
         'classes': 213
     }
     cp = ConfigValidator(d)
     assert_invalid_option('classes', '213',
+                          cp.validate_mandatory)
+
+def test_validate_mandatory_requires_option_databases():
+    d = FULL_CONFIG_BASE.copy()
+    del d['databases']
+    cp = ConfigValidator(d)
+    assert_required_option('databases', cp.validate_mandatory)
+
+def test_invalid_mandatory_option_databases_string():
+    d = FULL_CONFIG_BASE.copy()
+    d['databases'] = 'should_be_dict'
+    cp = ConfigValidator(d)
+    assert_invalid_option('databases', 'should_be_dict',
+                          cp.validate_mandatory)
+
+def test_invalid_mandatory_option_databases_none():
+    d = FULL_CONFIG_BASE.copy()
+    d['databases'] = None
+    cp = ConfigValidator(d)
+    assert_invalid_option('databases', None,
+                          cp.validate_mandatory)
+
+def test_databases_invalid_controller_name_weird_charactes():
+    d = FULL_CONFIG_BASE.copy()
+    d['databases'] = {
+        '%$*': 'sqlite://asdasd',
+    }
+
+    cp = ConfigValidator(d)
+    assert_invalid_option('databases', '%$*',
                           cp.validate_mandatory)
 
