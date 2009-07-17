@@ -230,49 +230,59 @@ def test_invalid_mandatory_option_application_none():
 def test_application_invalid_controller_name_numeral():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
-        '5NumeralController': '/',
+        'classes':{
+            '5NumeralController': '/',
+        }
     }
 
     cp = ConfigParser(d)
-    assert_invalid_option('application', '5NumeralController',
+    assert_invalid_option('classes', '5NumeralController',
                           cp.validate_mandatory)
 
 def test_application_invalid_controller_name_bad_chars():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
-        '-040%$WeirdNameController': '/',
+        'classes':{
+            '-040%$WeirdNameController': '/',
+        }
     }
 
     cp = ConfigParser(d)
-    assert_invalid_option('application', '-040%$WeirdNameController',
+    assert_invalid_option('classes', '-040%$WeirdNameController',
                           cp.validate_mandatory)
 
 def test_application_invalid_controller_name_bad_chars():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
-        'Controller With Spaces': '/',
+        'classes':{
+            'Controller With Spaces': '/',
+        }
     }
 
     cp = ConfigParser(d)
-    assert_invalid_option('application', 'Controller With Spaces',
+    assert_invalid_option('classes', 'Controller With Spaces',
                           cp.validate_mandatory)
 
 def test_controller_url_should_start_with_slash():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
-        'Controller With Spaces': 'wee/',
+        'classes':{
+            'Controller With Spaces': 'wee/',
+        }
     }
 
     cp = ConfigParser(d)
-    assert_invalid_option('application', 'Controller With Spaces',
+    assert_invalid_option('classes', 'Controller With Spaces',
                           cp.validate_mandatory)
 
 def test_validate_option_application():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
-        'RootController': '/',
-        'WikiController': '/wiki',
-        'MediaController': '/media',
+        'classes':{
+            'RootController': '/',
+            'WikiController': '/wiki',
+            'MediaController': '/media',
+        }
     }
     cp = ConfigParser(d)
     assert cp.validate_mandatory()
