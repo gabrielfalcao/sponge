@@ -4,17 +4,25 @@
 sponge configuration
 ====================
 
-There are a few variables to set within cherrypy.config dictionary to Sponge work properly:
+Sponge's configuration relies in the settings.yml file, which uses
+YAML_ as format.
+The settings.yml file must be in the path you are running Sponge Bob
+command line tool.
 
- * ``view.dir``: A string containing the absolute path to your html path.
- * ``image.dir``: A string containing the absolute path to where look for pictures and render as http response in sponge.view.jpeg and sponge.view.picture.
+There are a few options to set in settings.yml dictionary to Sponge
+work properly:
 
-Those variables just need to be set in cherrypy.config dict.
+run-as
+------
 
-Example::
+Default: ``standalone``
 
-   >>> import cherrypy
-   >>> from os.path import join, abspath, dirname
-   >>> cherrypy.config['view.dir'] = '/home/username/projects/webapp1/templates/html'
-   >>> # or even
-   >>> cherrypy.config['view.dir'] = abspath(join(dirname("."), 'templates/html'))
+A string that determines in which mode the server will run on.
+
+Possible values:
+
+ * `"standalone"`: The server will be running by itself, useful in
+   local development environment.
+
+ * `"wsgi"`: The server will be running as WSGI. Useful for production
+   deployment.
