@@ -31,14 +31,14 @@ class AnyValue(object):
 class ConfigParser(object):
     mandatory = {
         'run-as': ['standalone', 'wsgi'],
-        'host': r'\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}',
-        'port': r'\d+',
+        'host': r'^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$',
+        'port': r'^\d+$',
         'autoreload': AnyValue,
         'application': {
-            r'[a-zA-Z]\w*': r'[/].*'
+            r'^[a-zA-Z]\w*': r'[/].*$'
         },
         'databases': {
-            r'\w+': '.+'
+            r'^\w+$': '.+'
         }
     }
     def __init__(self, cdict):
@@ -63,6 +63,12 @@ class ConfigParser(object):
                     raise InvalidValueError, 'Invalid value in "%s" ' \
                           'option: "%s". Read the Sponge documentation ' \
                           'for more information.' % (option, value)
+            if isinstance(validator, basestring):
+                if not re.match(validator, value):
+                    raise InvalidValueError, 'Invalid value in "%s" ' \
+                          'option: "%s". Read the Sponge documentation ' \
+                          'for more information.' % (option, value)
+
         return True
 
     def validate_optional(self):

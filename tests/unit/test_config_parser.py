@@ -56,16 +56,22 @@ def test_config_parser_takes_dict():
                   'parameter, got None.')
 
 def test_config_parser_has_method_validate():
-    assert hasattr(ConfigParser, 'validate'), 'ConfigParser should have the method validate'
-    assert callable(ConfigParser.validate), 'ConfigParser.validate should be callable'
+    assert hasattr(ConfigParser, 'validate'), \
+           'ConfigParser should have the method validate'
+    assert callable(ConfigParser.validate), \
+           'ConfigParser.validate should be callable'
 
 def test_config_parser_has_method_validate_mandatory():
-    assert hasattr(ConfigParser, 'validate_mandatory'), 'ConfigParser should have the method validate_mandatory'
-    assert callable(ConfigParser.validate_mandatory), 'ConfigParser.validate_mandatory should be callable'
+    assert hasattr(ConfigParser, 'validate_mandatory'), \
+           'ConfigParser should have the method validate_mandatory'
+    assert callable(ConfigParser.validate_mandatory), \
+           'ConfigParser.validate_mandatory should be callable'
 
 def test_config_parser_has_method_validate_optional():
-    assert hasattr(ConfigParser, 'validate_optional'), 'ConfigParser should have the method validate_optional'
-    assert callable(ConfigParser.validate_optional), 'ConfigParser.validate_optional should be callable'
+    assert hasattr(ConfigParser, 'validate_optional'), \
+           'ConfigParser should have the method validate_optional'
+    assert callable(ConfigParser.validate_optional), \
+           'ConfigParser.validate_optional should be callable'
 
 def test_config_parser_validate_calls_validation_methods():
     mocker = Mox()
@@ -79,6 +85,12 @@ def test_config_parser_validate_calls_validation_methods():
     mocker.ReplayAll()
     cp.validate()
     mocker.VerifyAll()
+
+def assert_has_method_raise_invalid():
+    assert hasattr(ConfigParser, 'raise_invalid'), \
+           'ConfigParser should have the method raise_invalid'
+    assert callable(ConfigParser.raise_invalid), \
+           'ConfigParser.raise_invalid should be callable'
 
 def test_validate_mandatory_requires_option_run_as():
     d = FULL_CONFIG_BASE.copy()
@@ -103,3 +115,49 @@ def test_validate_mandatory_option_run_as_standalone():
     d['run-as'] = 'standalone'
     cp = ConfigParser(d)
     assert cp.validate_mandatory()
+
+def test_validate_mandatory_requires_option_host():
+    d = FULL_CONFIG_BASE.copy()
+    del d['host']
+    cp = ConfigParser(d)
+    assert_required_option('host', cp.validate_mandatory)
+
+def test_invalid_mandatory_option_host():
+    d = FULL_CONFIG_BASE.copy()
+    d['host'] = 'invalid_host_string'
+    cp = ConfigParser(d)
+    assert_invalid_option('host', 'invalid_host_string',
+                          cp.validate_mandatory)
+
+def test_validate_option_host():
+    d = FULL_CONFIG_BASE.copy()
+    d['host'] = '127.0.0.1'
+    cp = ConfigParser(d)
+    assert cp.validate_mandatory()
+
+def test_validate_mandatory_requires_option_port():
+    d = FULL_CONFIG_BASE.copy()
+    del d['port']
+    cp = ConfigParser(d)
+    assert_required_option('port', cp.validate_mandatory)
+
+def test_invalid_mandatory_option_port_float():
+    d = FULL_CONFIG_BASE.copy()
+    d['port'] = 90.2
+    cp = ConfigParser(d)
+    assert_invalid_option('port', '90.2',
+                          cp.validate_mandatory)
+
+def test_invalid_mandatory_option_port_string():
+    d = FULL_CONFIG_BASE.copy()
+    d['port'] = 'invalid_port'
+    cp = ConfigParser(d)
+    assert_invalid_option('port', 'invalid_port',
+                          cp.validate_mandatory)
+
+def test_validate_option_port():
+    d = FULL_CONFIG_BASE.copy()
+    d['port'] = '8080'
+    cp = ConfigParser(d)
+    assert cp.validate_mandatory()
+
