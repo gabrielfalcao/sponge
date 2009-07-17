@@ -25,15 +25,20 @@ class InvalidValueError(Exception):
 class RequiredOptionError(Exception):
     pass
 
-class AnyValue(object):
-    pass
 
 class ConfigParser(object):
+    class AnyValue(object):
+        def __init__(self, vartype):
+            if not isinstance(vartype, type):
+                raise TypeError, 'ConfigParser.AnyValue takes a ' \
+                  'type as parameter, got %s' % repr(vartype)
+            self.vartype = vartype
+
     mandatory = {
         'run-as': ['standalone', 'wsgi'],
         'host': r'^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$',
         'port': r'^\d+$',
-        'autoreload': AnyValue,
+        'autoreload': AnyValue(bool),
         'application': {
             r'^[a-zA-Z]\w*': r'[/].*$'
         },
@@ -62,7 +67,8 @@ class ConfigParser(object):
                 raise RequiredOptionError, \
                       'You get to set "%s" option within settings.yml' % option
             validator = self.mandatory[option]
-            value = unicode(self.cdict[option])
+            raw_value = self.cdict[option]
+            value = unicode(raw_value)
             if isinstance(validator, list):
                 if value not in validator:
                     self.raise_invalid(option, value)
@@ -71,6 +77,9 @@ class ConfigParser(object):
                 if not re.match(validator, value):
                     self.raise_invalid(option, value)
 
+            if isinstance(validator, self.AnyValue):
+                if not isinstance(raw_value, validator.vartype):
+                    self.raise_invalid(option, value)
         return True
 
     def validate_optional(self):

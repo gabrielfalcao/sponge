@@ -37,6 +37,21 @@ FULL_CONFIG_BASE = {
     }
 }
 
+def test_assert_has_inner_class_anyvalue():
+    assert hasattr(ConfigParser, 'AnyValue'), \
+           'ConfigParser should have attribute AnyValue'
+    assert isinstance(ConfigParser.AnyValue, type), \
+           'ConfigParser.AnyValue should be a class'
+
+def test_assert_any_value_takes_type():
+    assert_raises(TypeError, ConfigParser.AnyValue, '',
+                  exc_pattern=r'ConfigParser.AnyValue takes a ' \
+                  'type as parameter, got \'\'')
+
+def test_any_value_stashes_vartype():
+    av = ConfigParser.AnyValue(bool)
+    assert_equals(av.vartype, bool)
+
 def assert_required_option(option, method, *args, **kw):
     p = r'You get to set "%s" option within settings.yml' % option
     assert_raises(RequiredOptionError, method, exc_pattern=p, *args, **kw)
@@ -166,3 +181,21 @@ def test_validate_option_port():
     cp = ConfigParser(d)
     assert cp.validate_mandatory()
 
+def test_validate_mandatory_requires_option_autoreload():
+    d = FULL_CONFIG_BASE.copy()
+    del d['autoreload']
+    cp = ConfigParser(d)
+    assert_required_option('autoreload', cp.validate_mandatory)
+
+def test_invalid_mandatory_option_autoreload_string():
+    d = FULL_CONFIG_BASE.copy()
+    d['autoreload'] = 'should_be_bool'
+    cp = ConfigParser(d)
+    assert_invalid_option('autoreload', 'should_be_bool',
+                          cp.validate_mandatory)
+
+def test_validate_option_autoreload():
+    d = FULL_CONFIG_BASE.copy()
+    d['autoreload'] = True
+    cp = ConfigParser(d)
+    assert cp.validate_mandatory()
