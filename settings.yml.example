@@ -4,6 +4,8 @@ port: 8080
 autoreload: true
 application:
   path: /home/user/projects/web-app/module
+  template-dir: /home/user/projects/web-app/html
+  image-dir: /home/user/projects/web-app/images
   classes:
     SomeController: /
 
