@@ -40,10 +40,10 @@ class ConfigParser(object):
         'port': r'^\d+$',
         'autoreload': AnyValue(bool),
         'application': {
-            r'^[a-zA-Z]\w*': r'[/].*$'
+            r'^[a-zA-Z-][\w-]*$': r'^[/].*$'
         },
         'databases': {
-            r'^\w+$': '.+'
+            r'^[a-zA-Z-][\w-]*$': '^.+$'
         }
     }
     def __init__(self, cdict):
@@ -80,6 +80,19 @@ class ConfigParser(object):
             if isinstance(validator, self.AnyValue):
                 if not isinstance(raw_value, validator.vartype):
                     self.raise_invalid(option, value)
+
+            if isinstance(validator, dict):
+                if not isinstance(raw_value, dict):
+                    self.raise_invalid(option, value)
+                for key_regex, value_regex in validator.items():
+                    for key, value in raw_value.items():
+                        if not isinstance(value, basestring):
+                            self.raise_invalid(key, value)
+                        if not re.match(key_regex, key):
+                            self.raise_invalid(option, key)
+                        if not re.match(value_regex, value):
+                            self.raise_invalid(key, value)
+
         return True
 
     def validate_optional(self):
