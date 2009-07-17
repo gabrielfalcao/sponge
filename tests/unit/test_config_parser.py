@@ -239,7 +239,7 @@ def test_application_invalid_controller_name_numeral():
     assert_invalid_option('classes', '5NumeralController',
                           cp.validate_mandatory)
 
-def test_application_invalid_controller_name_bad_chars():
+def test_application_invalid_controller_name_bad_characters():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
         'classes':{
@@ -251,7 +251,7 @@ def test_application_invalid_controller_name_bad_chars():
     assert_invalid_option('classes', '-040%$WeirdNameController',
                           cp.validate_mandatory)
 
-def test_application_invalid_controller_name_bad_chars():
+def test_application_invalid_controller_name_spaces():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
         'classes':{
@@ -275,9 +275,42 @@ def test_controller_url_should_start_with_slash():
     assert_invalid_option('classes', 'Controller With Spaces',
                           cp.validate_mandatory)
 
+def test_application_invalid_names_with_spaces():
+    d = FULL_CONFIG_BASE.copy()
+    d['application'] = {
+        'path with spaces': '/',
+    }
+
+    cp = ConfigParser(d)
+    assert_invalid_option('application', 'path with spaces',
+                          cp.validate_mandatory)
+
+def test_application_invalid_names_with_bad_characters():
+    d = FULL_CONFIG_BASE.copy()
+    d['application'] = {
+        'fjkdas#@$%*kdfhagf': '/',
+    }
+
+    cp = ConfigParser(d)
+    assert_invalid_option('application', 'fjkdas#@$%*kdfhagf',
+                          cp.validate_mandatory)
+
+def test_application_invalid_names_starting_with_number():
+    d = FULL_CONFIG_BASE.copy()
+    d['application'] = {
+        '3kdjfbsff': '/',
+    }
+
+    cp = ConfigParser(d)
+    assert_invalid_option('application', '3kdjfbsff',
+                          cp.validate_mandatory)
+
 def test_validate_option_application():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = {
+        'image-dir': '/home/user/projects/web-app/images',
+        'path': '/home/user/projects/web-app/module',
+        'template-dir': '/home/user/projects/web-app/html',
         'classes':{
             'RootController': '/',
             'WikiController': '/wiki',
