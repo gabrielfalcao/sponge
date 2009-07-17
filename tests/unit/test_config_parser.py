@@ -17,5 +17,89 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+from mox import Mox
+from nose.tools import assert_equals
+from utils import assert_raises
 
-from sponge.core import ConfigParser
+from sponge.core import ConfigParser, RequiredOptionError
+from sponge.core import InvalidValueError
+
+FULL_CONFIG_BASE = {
+    'run-as': 'wsgi',
+    'host': '0.0.0.0',
+    'port': 80,
+    'autoreload': False,
+    'application': {
+        'Controller': '/'
+    },
+    'databases': {
+        'general': 'mysql://root@localhost/general'
+    }
+}
+
+def assert_required_option(option, method, *args, **kw):
+    p = r'You get to set "%s" option within settings.yml' % option
+    assert_raises(RequiredOptionError, method, exc_pattern=p, *args, **kw)
+
+def assert_invalid_option(option, value, method, *args, **kw):
+    p = r'Invalid value in "%s" option: "%s". ' \
+        'Read the Sponge documentation for more ' \
+        'information.' % (option, value)
+
+    assert_raises(InvalidValueError, method, exc_pattern=p, *args, **kw)
+
+def test_config_parser_takes_dict():
+    assert_raises(TypeError,
+                  ConfigParser,
+                  None,
+                  exc_pattern=r'ConfigParser takes a dict as ' \
+                  'parameter, got None.')
+
+def test_config_parser_has_method_validate():
+    assert hasattr(ConfigParser, 'validate'), 'ConfigParser should have the method validate'
+    assert callable(ConfigParser.validate), 'ConfigParser.validate should be callable'
+
+def test_config_parser_has_method_validate_mandatory():
+    assert hasattr(ConfigParser, 'validate_mandatory'), 'ConfigParser should have the method validate_mandatory'
+    assert callable(ConfigParser.validate_mandatory), 'ConfigParser.validate_mandatory should be callable'
+
+def test_config_parser_has_method_validate_optional():
+    assert hasattr(ConfigParser, 'validate_optional'), 'ConfigParser should have the method validate_optional'
+    assert callable(ConfigParser.validate_optional), 'ConfigParser.validate_optional should be callable'
+
+def test_config_parser_validate_calls_validation_methods():
+    mocker = Mox()
+    cp = ConfigParser({})
+    cp.validate_mandatory = mocker.CreateMockAnything()
+    cp.validate_optional = mocker.CreateMockAnything()
+
+    cp.validate_mandatory()
+    cp.validate_optional()
+
+    mocker.ReplayAll()
+    cp.validate()
+    mocker.VerifyAll()
+
+def test_validate_mandatory_requires_option_run_as():
+    d = FULL_CONFIG_BASE.copy()
+    del d['run-as']
+    cp = ConfigParser(d)
+    assert_required_option('run-as', cp.validate_mandatory)
+
+def test_invalid_mandatory_option_run_as():
+    d = FULL_CONFIG_BASE.copy()
+    d['run-as'] = 'blabla'
+    cp = ConfigParser(d)
+    assert_invalid_option('run-as', 'blabla', cp.validate_mandatory)
+
+def test_validate_mandatory_option_run_as_wsgi():
+    d = FULL_CONFIG_BASE.copy()
+    d['run-as'] = 'wsgi'
+    cp = ConfigParser(d)
+    assert cp.validate_mandatory()
+
+def test_validate_mandatory_option_run_as_standalone():
+    d = FULL_CONFIG_BASE.copy()
+    d['run-as'] = 'standalone'
+    cp = ConfigParser(d)
+    assert cp.validate_mandatory()

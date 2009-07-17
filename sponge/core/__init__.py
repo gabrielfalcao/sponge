@@ -17,6 +17,54 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+import re
+
+class InvalidValueError(Exception):
+    pass
+
+class RequiredOptionError(Exception):
+    pass
+
+class AnyValue(object):
+    pass
 
 class ConfigParser(object):
-    pass
+    mandatory = {
+        'run-as': ['standalone', 'wsgi'],
+        'host': r'\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}',
+        'port': r'\d+',
+        'autoreload': AnyValue,
+        'application': {
+            r'[a-zA-Z]\w*': r'[/].*'
+        },
+        'databases': {
+            r'\w+': '.+'
+        }
+    }
+    def __init__(self, cdict):
+        if not isinstance(cdict, dict):
+            raise TypeError, 'ConfigParser takes a dict as parameter, got None.'
+        self.cdict = cdict
+
+    def validate(self):
+        self.validate_mandatory()
+        self.validate_optional()
+
+    def validate_mandatory(self):
+        keys = self.cdict.keys()
+        for option in self.mandatory:
+            if option not in keys:
+                raise RequiredOptionError, \
+                      'You get to set "%s" option within settings.yml' % option
+            validator = self.mandatory[option]
+            value = unicode(self.cdict[option])
+            if isinstance(validator, list):
+                if value not in validator:
+                    raise InvalidValueError, 'Invalid value in "%s" ' \
+                          'option: "%s". Read the Sponge documentation ' \
+                          'for more information.' % (option, value)
+        return True
+
+    def validate_optional(self):
+        pass
+
