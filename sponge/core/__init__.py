@@ -86,12 +86,13 @@ class ConfigParser(object):
                     self.raise_invalid(option, value)
                 for key_regex, value_regex in validator.items():
                     for key, value in raw_value.items():
-                        if not isinstance(value, basestring):
+                        if not isinstance(value, (basestring, dict)):
                             self.raise_invalid(key, value)
-                        if not re.match(key_regex, key):
-                            self.raise_invalid(option, key)
-                        if not re.match(value_regex, value):
-                            self.raise_invalid(key, value)
+                        if isinstance(value, basestring):
+                            if not re.match(key_regex, key):
+                                self.raise_invalid(option, key)
+                            if not re.match(value_regex, value):
+                                self.raise_invalid(key, value)
 
         return True
 
