@@ -26,11 +26,11 @@ class RequiredOptionError(Exception):
     pass
 
 
-class ConfigParser(object):
+class ConfigValidator(object):
     class AnyValue(object):
         def __init__(self, vartype):
             if not isinstance(vartype, type):
-                raise TypeError, 'ConfigParser.AnyValue takes a ' \
+                raise TypeError, 'ConfigValidator.AnyValue takes a ' \
                   'type as parameter, got %s' % repr(vartype)
             self.vartype = vartype
 
@@ -48,7 +48,7 @@ class ConfigParser(object):
     }
     def __init__(self, cdict):
         if not isinstance(cdict, dict):
-            raise TypeError, 'ConfigParser takes a dict as parameter, got None.'
+            raise TypeError, 'ConfigValidator takes a dict as parameter, got None.'
         self.cdict = cdict
 
     def validate(self):

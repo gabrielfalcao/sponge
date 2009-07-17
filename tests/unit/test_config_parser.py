@@ -22,7 +22,7 @@ from mox import Mox
 from nose.tools import assert_equals
 from utils import assert_raises
 
-from sponge.core import ConfigParser, RequiredOptionError
+from sponge.core import ConfigValidator, RequiredOptionError
 from sponge.core import InvalidValueError
 
 FULL_CONFIG_BASE = {
@@ -40,18 +40,18 @@ FULL_CONFIG_BASE = {
 }
 
 def test_assert_has_inner_class_anyvalue():
-    assert hasattr(ConfigParser, 'AnyValue'), \
-           'ConfigParser should have attribute AnyValue'
-    assert isinstance(ConfigParser.AnyValue, type), \
-           'ConfigParser.AnyValue should be a class'
+    assert hasattr(ConfigValidator, 'AnyValue'), \
+           'ConfigValidator should have attribute AnyValue'
+    assert isinstance(ConfigValidator.AnyValue, type), \
+           'ConfigValidator.AnyValue should be a class'
 
 def test_assert_any_value_takes_type():
-    assert_raises(TypeError, ConfigParser.AnyValue, '',
-                  exc_pattern=r'ConfigParser.AnyValue takes a ' \
+    assert_raises(TypeError, ConfigValidator.AnyValue, '',
+                  exc_pattern=r'ConfigValidator.AnyValue takes a ' \
                   'type as parameter, got \'\'')
 
 def test_any_value_stashes_vartype():
-    av = ConfigParser.AnyValue(bool)
+    av = ConfigValidator.AnyValue(bool)
     assert_equals(av.vartype, bool)
 
 def assert_required_option(option, method, *args, **kw):
@@ -70,34 +70,34 @@ def assert_invalid_option(option, value, method, *args, **kw):
 
     assert_raises(InvalidValueError, method, exc_pattern=p, *args, **kw)
 
-def test_config_parser_takes_dict():
+def test_config_validator_takes_dict():
     assert_raises(TypeError,
-                  ConfigParser,
+                  ConfigValidator,
                   None,
-                  exc_pattern=r'ConfigParser takes a dict as ' \
+                  exc_pattern=r'ConfigValidator takes a dict as ' \
                   'parameter, got None.')
 
-def test_config_parser_has_method_validate():
-    assert hasattr(ConfigParser, 'validate'), \
-           'ConfigParser should have the method validate'
-    assert callable(ConfigParser.validate), \
-           'ConfigParser.validate should be callable'
+def test_config_validator_has_method_validate():
+    assert hasattr(ConfigValidator, 'validate'), \
+           'ConfigValidator should have the method validate'
+    assert callable(ConfigValidator.validate), \
+           'ConfigValidator.validate should be callable'
 
-def test_config_parser_has_method_validate_mandatory():
-    assert hasattr(ConfigParser, 'validate_mandatory'), \
-           'ConfigParser should have the method validate_mandatory'
-    assert callable(ConfigParser.validate_mandatory), \
-           'ConfigParser.validate_mandatory should be callable'
+def test_config_validator_has_method_validate_mandatory():
+    assert hasattr(ConfigValidator, 'validate_mandatory'), \
+           'ConfigValidator should have the method validate_mandatory'
+    assert callable(ConfigValidator.validate_mandatory), \
+           'ConfigValidator.validate_mandatory should be callable'
 
-def test_config_parser_has_method_validate_optional():
-    assert hasattr(ConfigParser, 'validate_optional'), \
-           'ConfigParser should have the method validate_optional'
-    assert callable(ConfigParser.validate_optional), \
-           'ConfigParser.validate_optional should be callable'
+def test_config_validator_has_method_validate_optional():
+    assert hasattr(ConfigValidator, 'validate_optional'), \
+           'ConfigValidator should have the method validate_optional'
+    assert callable(ConfigValidator.validate_optional), \
+           'ConfigValidator.validate_optional should be callable'
 
-def test_config_parser_validate_calls_validation_methods():
+def test_config_validator_validate_calls_validation_methods():
     mocker = Mox()
-    cp = ConfigParser({})
+    cp = ConfigValidator({})
     cp.validate_mandatory = mocker.CreateMockAnything()
     cp.validate_optional = mocker.CreateMockAnything()
 
@@ -109,121 +109,121 @@ def test_config_parser_validate_calls_validation_methods():
     mocker.VerifyAll()
 
 def test_has_method_raise_invalid():
-    assert hasattr(ConfigParser, 'raise_invalid'), \
-           'ConfigParser should have the method raise_invalid'
-    assert callable(ConfigParser.raise_invalid), \
-           'ConfigParser.raise_invalid should be callable'
+    assert hasattr(ConfigValidator, 'raise_invalid'), \
+           'ConfigValidator should have the method raise_invalid'
+    assert callable(ConfigValidator.raise_invalid), \
+           'ConfigValidator.raise_invalid should be callable'
 
 def test_raise_invalid_raises():
-    cp = ConfigParser({})
+    cp = ConfigValidator({})
     assert_invalid_option('foo-bar', 'john-doe',
                           cp.raise_invalid, 'foo-bar', 'john-doe')
 
 def test_validate_mandatory_requires_option_run_as():
     d = FULL_CONFIG_BASE.copy()
     del d['run-as']
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_required_option('run-as', cp.validate_mandatory)
 
 def test_invalid_mandatory_option_run_as():
     d = FULL_CONFIG_BASE.copy()
     d['run-as'] = 'blabla'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('run-as', 'blabla', cp.validate_mandatory)
 
 def test_validate_mandatory_option_run_as_wsgi():
     d = FULL_CONFIG_BASE.copy()
     d['run-as'] = 'wsgi'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert cp.validate_mandatory()
 
 def test_validate_mandatory_option_run_as_standalone():
     d = FULL_CONFIG_BASE.copy()
     d['run-as'] = 'standalone'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert cp.validate_mandatory()
 
 def test_validate_mandatory_requires_option_host():
     d = FULL_CONFIG_BASE.copy()
     del d['host']
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_required_option('host', cp.validate_mandatory)
 
 def test_invalid_mandatory_option_host():
     d = FULL_CONFIG_BASE.copy()
     d['host'] = 'invalid_host_string'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('host', 'invalid_host_string',
                           cp.validate_mandatory)
 
 def test_validate_option_host():
     d = FULL_CONFIG_BASE.copy()
     d['host'] = '127.0.0.1'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert cp.validate_mandatory()
 
 def test_validate_mandatory_requires_option_port():
     d = FULL_CONFIG_BASE.copy()
     del d['port']
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_required_option('port', cp.validate_mandatory)
 
 def test_invalid_mandatory_option_port_float():
     d = FULL_CONFIG_BASE.copy()
     d['port'] = 90.2
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('port', '90.2',
                           cp.validate_mandatory)
 
 def test_invalid_mandatory_option_port_string():
     d = FULL_CONFIG_BASE.copy()
     d['port'] = 'invalid_port'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('port', 'invalid_port',
                           cp.validate_mandatory)
 
 def test_validate_option_port():
     d = FULL_CONFIG_BASE.copy()
     d['port'] = '8080'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert cp.validate_mandatory()
 
 def test_validate_mandatory_requires_option_autoreload():
     d = FULL_CONFIG_BASE.copy()
     del d['autoreload']
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_required_option('autoreload', cp.validate_mandatory)
 
 def test_invalid_mandatory_option_autoreload_string():
     d = FULL_CONFIG_BASE.copy()
     d['autoreload'] = 'should_be_bool'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('autoreload', 'should_be_bool',
                           cp.validate_mandatory)
 
 def test_validate_option_autoreload():
     d = FULL_CONFIG_BASE.copy()
     d['autoreload'] = True
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert cp.validate_mandatory()
 
 def test_validate_mandatory_requires_option_application():
     d = FULL_CONFIG_BASE.copy()
     del d['application']
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_required_option('application', cp.validate_mandatory)
 
 def test_invalid_mandatory_option_application_string():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = 'should_be_dict'
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('application', 'should_be_dict',
                           cp.validate_mandatory)
 
 def test_invalid_mandatory_option_application_none():
     d = FULL_CONFIG_BASE.copy()
     d['application'] = None
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('application', None,
                           cp.validate_mandatory)
 
@@ -235,7 +235,7 @@ def test_application_invalid_controller_name_numeral():
         }
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('classes', '5NumeralController',
                           cp.validate_mandatory)
 
@@ -247,7 +247,7 @@ def test_application_invalid_controller_name_bad_characters():
         }
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('classes', '-040%$WeirdNameController',
                           cp.validate_mandatory)
 
@@ -259,7 +259,7 @@ def test_application_invalid_controller_name_spaces():
         }
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('classes', 'Controller With Spaces',
                           cp.validate_mandatory)
 
@@ -271,7 +271,7 @@ def test_controller_url_should_start_with_slash():
         }
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('classes', 'Controller With Spaces',
                           cp.validate_mandatory)
 
@@ -281,7 +281,7 @@ def test_application_invalid_names_with_spaces():
         'path with spaces': '/',
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('application', 'path with spaces',
                           cp.validate_mandatory)
 
@@ -291,7 +291,7 @@ def test_application_invalid_names_with_bad_characters():
         'fjkdas#@$%*kdfhagf': '/',
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('application', 'fjkdas#@$%*kdfhagf',
                           cp.validate_mandatory)
 
@@ -301,7 +301,7 @@ def test_application_invalid_names_starting_with_number():
         '3kdjfbsff': '/',
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('application', '3kdjfbsff',
                           cp.validate_mandatory)
 
@@ -311,7 +311,7 @@ def test_application_invalid_values_without_bar_at_start():
         'something': 'asd/',
     }
 
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('something', 'asd/',
                           cp.validate_mandatory)
 
@@ -327,7 +327,7 @@ def test_validate_option_application():
             'MediaController': '/media',
         }
     }
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert cp.validate_mandatory()
 
 def test_validate_sub_options_should_be_dict():
@@ -335,7 +335,7 @@ def test_validate_sub_options_should_be_dict():
     d['application'] = {
         'classes': 213
     }
-    cp = ConfigParser(d)
+    cp = ConfigValidator(d)
     assert_invalid_option('classes', '213',
                           cp.validate_mandatory)
 
