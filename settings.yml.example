@@ -1,0 +1,13 @@
+run-as: standalone # possible values: standalone, wsgi
+host: 127.0.0.1
+port: 8080
+autoreload: true
+application:
+  path: /home/user/projects/web-app/module
+  classes:
+    SomeController: /
+
+databases:
+  media: mysql://root@localhost/webapp_media
+  general: postgres://root:p4ssword@localhost/webapp_general
+  metadata: sqlite:///webapp_metadata.db
