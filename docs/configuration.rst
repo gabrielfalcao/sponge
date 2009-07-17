@@ -5,7 +5,7 @@ sponge configuration
 ====================
 
 Sponge's configuration relies in the settings.yml file, which uses
-YAML_ as format.
+`YAML <http://www.yaml.org/>`_ as format.
 The settings.yml file must be in the path you are running Sponge Bob
 command line tool.
 
@@ -19,10 +19,24 @@ Default: ``standalone``
 
 A string that determines in which mode the server will run on.
 
-Possible values:
+Possible values
+:::::::::::::::
 
- * `"standalone"`: The server will be running by itself, useful in
-   local development environment.
 
- * `"wsgi"`: The server will be running as WSGI. Useful for production
-   deployment.
+standalone
+^^^^^^^^^^
+
+The server will be running by itself, useful in local development environment.
+
+Example::
+
+    run-as: standalone
+
+wsgi
+^^^^
+
+The server will be running as WSGI. Useful for production deployment.
+
+Example::
+
+    run-as: wsgi
