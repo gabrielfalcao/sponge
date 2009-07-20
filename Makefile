@@ -1,6 +1,7 @@
 all: clean test
 
 clean:
+	@echo "Cleaning up all *.pyc files ..."
 	@find . -name '*.pyc' -delete
 
 test:
