@@ -21,9 +21,11 @@
 
 import sys
 import os
+
 from Cheetah.Template import Template
 
 from sponge import __version__ as version
+from sponge.file_system import FileSystem
 
 class ProjectFolderExistsError(ValueError):
     pass
@@ -46,7 +48,6 @@ class Bob(object):
 
         self.fs = fs
         if not self.fs:
-            from file_system import FileSystem
             self.fs = FileSystem()
 
     def run(self):

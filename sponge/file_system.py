@@ -20,9 +20,10 @@
 # Boston, MA 02111-1307, USA.
 
 import os
-from os.path import abspath, join, dirname
 import fnmatch
+
 from glob import glob
+from os.path import abspath, join, dirname
 
 class FileSystem(object):
 
