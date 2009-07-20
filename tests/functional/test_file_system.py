@@ -20,7 +20,7 @@
 # Boston, MA 02111-1307, USA.
 
 from os.path import abspath, dirname, join, split
-
+from nose.tools import assert_equals
 from sponge.file_system import FileSystem
 
 def test_abspath():
@@ -29,6 +29,20 @@ def test_abspath():
     p2 = abspath(".")
 
     assert p == p2
+
+def test_current_dir_with_join():
+    fs = FileSystem()
+    got = fs.current_dir("etc")
+    expected = join(abspath("."), "etc")
+
+    assert_equals(got, expected)
+
+def test_current_dir_without_join():
+    fs = FileSystem()
+    got = fs.current_dir()
+    expected = abspath(".")
+
+    assert_equals(got, expected)
 
 def test_join():
     fs = FileSystem()

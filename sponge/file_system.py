@@ -23,9 +23,18 @@ import os
 import fnmatch
 
 from glob import glob
-from os.path import abspath, join, dirname
+from os.path import abspath, join, dirname, curdir
 
 class FileSystem(object):
+
+    def current_dir(self, path=""):
+        '''Returns the absolute path for current dir, also join the
+        current path with the given, if so.'''
+        to_return = abspath(curdir)
+        if path:
+            return join(to_return, path)
+
+        return to_return
 
     def abspath(self, path):
         '''Returns the absolute path for the given path.'''
