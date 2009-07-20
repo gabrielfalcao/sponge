@@ -19,13 +19,22 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-import sys
 import os
+import sys
+import yaml
+import codecs
+import cherrypy
 
 from Cheetah.Template import Template
 
 from sponge import __version__ as version
 from sponge.file_system import FileSystem
+from sponge.core import ConfigValidator
+
+class ClassLoader(object):
+    def __init__(self):
+        pass
+
 
 class ProjectFolderExistsError(ValueError):
     pass
@@ -58,6 +67,13 @@ class Bob(object):
             return 0
 
         return 0
+
+    def go(self):
+        full_path = self.fs.current_dir("settings.yml")
+        raw_yaml = codecs.open(full_path, 'r', 'utf-8').read()
+        orig_dict = yaml.load(raw_yaml)
+        self.config_validator = ConfigValidator(orig_dict)
+        cherrypy.config['sponge'] = self.config_validator.cdict
 
     def create_project(self, options, project_name):
         path = self.fs.abspath(self.fs.join(options.project_dir, project_name))

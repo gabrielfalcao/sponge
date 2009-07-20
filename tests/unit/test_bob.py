@@ -19,19 +19,19 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+import yaml
+import cherrypy
 import optparse
 
-import os
 from os.path import abspath, join, dirname
-
 from mox import Mox
-
-from sponge.bob import *
+from nose.tools import assert_equals
+from sponge import bob
 
 def test_can_create_bob():
-    b = Bob()
+    b = bob.Bob()
     assert b
-    assert isinstance(b, Bob)
+    assert isinstance(b, bob.Bob)
 
 def test_run():
     mox = Mox()
@@ -41,7 +41,7 @@ def test_run():
 
     mox.ReplayAll()
 
-    b = Bob(parser=mock_parser)
+    b = bob.Bob(parser=mock_parser)
     b.run()
 
     mox.VerifyAll()
@@ -61,10 +61,10 @@ def test_create_project_raises_if_folder_already_exists():
 
     mox.ReplayAll()
 
-    b = Bob(parser=mock_parser, fs=file_system)
+    b = bob.Bob(parser=mock_parser, fs=file_system)
     try:
         b.create_project(options_mock,"some project")
-    except Bob.ProjectFolderExists, err:
+    except bob.Bob.ProjectFolderExists, err:
         assert str(err) == "There is a folder at '/something/some project' already, thus making it impossible to create a project there."
         mox.VerifyAll()
         return
@@ -85,7 +85,7 @@ def test_create_project_creates_folder_if_one_does_not_exist():
     file_system.exists("/something/some project").AndReturn(False)
     file_system.mkdir("/something/some project")
 
-    b = Bob(parser=mock_parser, fs=file_system)
+    b = bob.Bob(parser=mock_parser, fs=file_system)
     mox.StubOutWithMock(b, 'create_project_structure')
     b.create_project_structure(options_mock, "some project", "/something/some project")
 
@@ -110,7 +110,7 @@ def test_create_project_calls_create_structure():
     file_system.exists("/something/some project").AndReturn(False)
     file_system.mkdir("/something/some project")
 
-    b = Bob(parser=mock_parser, fs=file_system)
+    b = bob.Bob(parser=mock_parser, fs=file_system)
     mox.StubOutWithMock(b, 'create_project_structure')
     b.create_project_structure(options_mock, "some project", "/something/some project")
     mox.ReplayAll()
@@ -130,10 +130,10 @@ def test_create_structure():
 
     file_system = mox.CreateMockAnything()
 
-    b = Bob(parser=mock_parser, fs=file_system)
+    b = bob.Bob(parser=mock_parser, fs=file_system)
 
-    file_path = Bob.get_file_path
-    Bob.get_file_path = lambda self: "fake file"
+    file_path = bob.Bob.get_file_path
+    bob.Bob.get_file_path = lambda self: "fake file"
 
     path = "/some/path/to/fake file"
 
@@ -163,7 +163,7 @@ def test_create_project_through_run():
 
     file_system = mox.CreateMockAnything()
 
-    b = Bob(parser=mock_parser, fs=file_system)
+    b = bob.Bob(parser=mock_parser, fs=file_system)
     b.create_project = mox.CreateMockAnything()
     b.create_project('should_be_options', 'should_be_project_name')
     mox.ReplayAll()
@@ -172,5 +172,48 @@ def test_create_project_through_run():
         got = b.run()
         assert got is 0, 'Expected 0, got %s' % repr(got)
         mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_bob_go():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+    mox.StubOutWithMock(bob, 'codecs')
+    mox.StubOutWithMock(bob, 'yaml')
+
+    config_dict = {
+        'run-as': 'wsgi',
+        'host': '0.0.0.0',
+        'port': 80,
+        'autoreload': False,
+        'application': {
+            'classes': {
+                'SomeController': '/'
+            }
+        }
+    }
+
+    file_object_mock = mox.CreateMockAnything()
+    raw_yaml = yaml.dump(config_dict)
+    file_object_mock.read().AndReturn(raw_yaml)
+    bob.codecs.open('/full/path/to/settings.yml', 'r', 'utf-8').AndReturn(file_object_mock)
+    bob.yaml.load(raw_yaml).AndReturn(config_dict)
+
+    options_mock = mox.CreateMockAnything()
+    file_system = mox.CreateMockAnything()
+    file_system.current_dir('settings.yml').AndReturn('/full/path/to/settings.yml')
+    b = bob.Bob(parser=mock_parser, fs=file_system)
+    mox.ReplayAll()
+
+    try:
+        got = b.go()
+        assert cherrypy.config.has_key('sponge'), \
+               'After invoking Bob.go, cherrypy.config should ' \
+               'have the key "sponge"'
+        assert_equals(cherrypy.config['sponge'], config_dict)
+
+        mox.VerifyAll()
+
     finally:
         mox.UnsetStubs()
