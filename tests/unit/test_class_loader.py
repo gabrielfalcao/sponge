@@ -17,9 +17,19 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+from re import escape
+from mox import Mox
+from nose.tools import assert_equals
+from utils import assert_raises
 
-class ClassLoader(object):
-    def __init__(self, path):
-        if not isinstance(path, basestring):
-            raise TypeError, 'ClassLoader takes a string ' \
-                  'as path parameter, got %s.' % repr(path)
+from sponge.core.io import ClassLoader
+
+def test_class_loader_takes_a_string_path_raises_with_number():
+    assert_raises(TypeError, ClassLoader, 5,
+                  exc_pattern=r'ClassLoader takes a string ' \
+                  'as path parameter, got 5.')
+
+def test_class_loader_takes_a_string_path_raises_with_none():
+    assert_raises(TypeError, ClassLoader, None,
+                  exc_pattern=r'ClassLoader takes a string ' \
+                  'as path parameter, got None.')
