@@ -18,6 +18,47 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+import os
+import fnmatch
+
+from glob import glob
+from os.path import abspath, join, dirname, curdir
+
+class FileSystem(object):
+
+    def current_dir(self, path=""):
+        '''Returns the absolute path for current dir, also join the
+        current path with the given, if so.'''
+        to_return = abspath(curdir)
+        if path:
+            return join(to_return, path)
+
+        return to_return
+
+    def abspath(self, path):
+        '''Returns the absolute path for the given path.'''
+        return abspath(path)
+
+    def join(self, *args):
+        '''Returns the concatenated path for the given arguments.'''
+        return join(*args)
+
+    def dirname(self, path):
+        '''Returns the directory name for the given file.'''
+        return dirname(path)
+
+    def locate(self, path, match, recursive=True):
+        root_path = self.abspath(path)
+
+        if recursive:
+            return_files = []
+            for path, dirs, files in os.walk(root_path):
+                for filename in fnmatch.filter(files, match):
+                    return_files.append(self.join(path, filename))
+            return return_files
+        else:
+            return glob(join(root_path, match))
+
 class ClassLoader(object):
     def __init__(self, path):
         if not isinstance(path, basestring):

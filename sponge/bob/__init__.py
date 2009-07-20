@@ -28,13 +28,8 @@ import cherrypy
 from Cheetah.Template import Template
 
 from sponge import __version__ as version
-from sponge.file_system import FileSystem
 from sponge.core import ConfigValidator
-
-class ClassLoader(object):
-    def __init__(self):
-        pass
-
+from sponge.core.io import FileSystem, ClassLoader
 
 class ProjectFolderExistsError(ValueError):
     pass

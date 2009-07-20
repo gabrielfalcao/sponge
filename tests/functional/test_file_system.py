@@ -21,7 +21,7 @@
 
 from os.path import abspath, dirname, join, split
 from nose.tools import assert_equals
-from sponge.file_system import FileSystem
+from sponge.core.io import FileSystem
 
 def test_abspath():
     fs = FileSystem()
