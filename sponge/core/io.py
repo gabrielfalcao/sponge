@@ -64,3 +64,16 @@ class ClassLoader(object):
         if not isinstance(path, basestring):
             raise TypeError, 'ClassLoader takes a string ' \
                   'as path parameter, got %s.' % repr(path)
+
+        old_path = os.path.abspath(os.path.curdir)
+        if not os.path.isdir(path):
+            dir_name, file_name = os.path.split(path)
+            module_name = os.path.splitext(file_name)[0]
+            os.chdir(dir_name)
+
+            self.module = __import__(module_name)
+
+        os.chdir(old_path)
+
+    def load(self, classname):
+        return getattr(self.module, classname)
