@@ -1,0 +1,2 @@
+class ClassInsideFile:
+    param = 'ParamFromClass'

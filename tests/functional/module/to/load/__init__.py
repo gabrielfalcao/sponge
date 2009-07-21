@@ -1,0 +1,2 @@
+class ClassInsideModule:
+    param = 'ParamFromClass'

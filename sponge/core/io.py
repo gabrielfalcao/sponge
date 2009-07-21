@@ -19,14 +19,15 @@
 # Boston, MA 02111-1307, USA.
 
 import os
+import sys
 import fnmatch
 
 from glob import glob
 from os.path import abspath, join, dirname, curdir
 
 class FileSystem(object):
-
-    def current_dir(self, path=""):
+    @classmethod
+    def current_dir(cls, path=""):
         '''Returns the absolute path for current dir, also join the
         current path with the given, if so.'''
         to_return = abspath(curdir)
@@ -35,26 +36,30 @@ class FileSystem(object):
 
         return to_return
 
-    def abspath(self, path):
+    @classmethod
+    def abspath(cls, path):
         '''Returns the absolute path for the given path.'''
         return abspath(path)
 
-    def join(self, *args):
+    @classmethod
+    def join(cls, *args):
         '''Returns the concatenated path for the given arguments.'''
         return join(*args)
 
-    def dirname(self, path):
+    @classmethod
+    def dirname(cls, path):
         '''Returns the directory name for the given file.'''
         return dirname(path)
 
-    def locate(self, path, match, recursive=True):
-        root_path = self.abspath(path)
+    @classmethod
+    def locate(cls, path, match, recursive=True):
+        root_path = cls.abspath(path)
 
         if recursive:
             return_files = []
             for path, dirs, files in os.walk(root_path):
                 for filename in fnmatch.filter(files, match):
-                    return_files.append(self.join(path, filename))
+                    return_files.append(cls.join(path, filename))
             return return_files
         else:
             return glob(join(root_path, match))
@@ -65,18 +70,16 @@ class ClassLoader(object):
             raise TypeError, 'ClassLoader takes a string ' \
                   'as path parameter, got %s.' % repr(path)
 
-        old_path = os.path.abspath(os.path.curdir)
         if not os.path.isdir(path):
             dir_name, file_name = os.path.split(path)
             module_name = os.path.splitext(file_name)[0]
-            os.chdir(dir_name)
-            self.module = __import__(module_name)
         else:
             dir_name, module_name = os.path.split(path.rstrip('/'))
-            os.chdir(dir_name)
-            self.module = __import__(module_name)
 
-        os.chdir(old_path)
+        sys.path.append(dir_name)
+        self.module = __import__(module_name)
+
+        sys.path.pop()
 
     def load(self, classname):
         return getattr(self.module, classname)

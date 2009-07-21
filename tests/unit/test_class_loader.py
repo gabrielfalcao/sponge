@@ -39,6 +39,8 @@ def test_class_loader_loads_from_file():
     mox = Mox()
 
     mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.sys, 'path')
+    io.os.path = mox.CreateMockAnything()
     import_func = __import__
     io.__import__ = mox.CreateMockAnything()
 
@@ -46,21 +48,16 @@ def test_class_loader_loads_from_file():
     class_file = 'file.py'
     class_path = '%s/%s' % (class_dir, class_file)
 
-    io.os.path = mox.CreateMockAnything()
-    io.os.path.curdir = "."
-    io.os.path.abspath(".").AndReturn('should_be_old_abspath')
-
     io.os.path.isdir(class_path).AndReturn(False)
 
     io.os.path.split(class_path).AndReturn((class_dir, class_file))
     io.os.path.splitext(class_file).AndReturn(('file', '.py'))
 
-    io.os.chdir(class_dir)
-
+    io.sys.path.append(class_dir)
+    io.sys.path.pop()
     module_mock = mox.CreateMockAnything()
     module_mock.ClassIWantToLoad = 'should_be_expected_class'
     io.__import__('file').AndReturn(module_mock)
-    io.os.chdir('should_be_old_abspath')
 
     mox.ReplayAll()
 
@@ -75,6 +72,9 @@ def test_class_loader_loads_from_module():
     mox = Mox()
 
     mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.sys, 'path')
+
+    io.os.path = mox.CreateMockAnything()
     import_func = __import__
     io.__import__ = mox.CreateMockAnything()
 
@@ -83,19 +83,17 @@ def test_class_loader_loads_from_module():
     module_dir = '/full/path/to/'
 
     io.os.path = mox.CreateMockAnything()
-    io.os.path.curdir = "."
-    io.os.path.abspath(".").AndReturn('should_be_old_abspath')
 
     io.os.path.isdir(class_path).AndReturn(True)
 
     io.os.path.split(class_path.rstrip('/')).AndReturn((module_dir, module_name))
 
-    io.os.chdir(module_dir)
+    io.sys.path.append(module_dir)
+    io.sys.path.pop()
 
     module_mock = mox.CreateMockAnything()
     module_mock.ClassIWantToLoad = 'should_be_expected_class'
     io.__import__('module').AndReturn(module_mock)
-    io.os.chdir('should_be_old_abspath')
 
     mox.ReplayAll()
 
