@@ -178,8 +178,16 @@ def test_create_project_through_run():
 def test_bob_go():
     mox = Mox()
 
+    class_loader = bob.ClassLoader
     mock_parser = mox.CreateMockAnything()
+    bob.ClassLoader = mox.CreateMockAnything()
+
     mox.StubOutWithMock(bob, 'codecs')
+
+    mox.StubOutWithMock(bob.cherrypy, 'tree')
+    mox.StubOutWithMock(bob.cherrypy, 'server')
+    mox.StubOutWithMock(bob.cherrypy, 'engine')
+
     mox.StubOutWithMock(bob, 'yaml')
 
     config_dict = {
@@ -188,6 +196,7 @@ def test_bob_go():
         'port': 80,
         'autoreload': False,
         'application': {
+            'path': '/path/to/project',
             'classes': {
                 'SomeController': '/'
             }
@@ -203,6 +212,16 @@ def test_bob_go():
     options_mock = mox.CreateMockAnything()
     file_system = mox.CreateMockAnything()
     file_system.current_dir('settings.yml').AndReturn('/full/path/to/settings.yml')
+
+    class_loader_mock = mox.CreateMockAnything()
+    controller_mock = mox.CreateMockAnything()
+    bob.ClassLoader('/path/to/project').AndReturn(class_loader_mock)
+    class_loader_mock.load('SomeController').AndReturn(controller_mock)
+    cherrypy.tree.mount(controller_mock().AndReturn(controller_mock), '/')
+    cherrypy.server.quickstart()
+    cherrypy.engine.start()
+    cherrypy.engine.block()
+
     b = bob.Bob(parser=mock_parser, fs=file_system)
     mox.ReplayAll()
 
@@ -217,3 +236,4 @@ def test_bob_go():
 
     finally:
         mox.UnsetStubs()
+        bob.ClassLoader = class_loader

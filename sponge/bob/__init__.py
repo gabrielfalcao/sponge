@@ -61,6 +61,10 @@ class Bob(object):
             self.create_project(options, args[1])
             return 0
 
+        if args and args[0] == 'go':
+            self.go()
+            return 0
+
         return 0
 
     def go(self):
@@ -69,6 +73,16 @@ class Bob(object):
         orig_dict = yaml.load(raw_yaml)
         self.config_validator = ConfigValidator(orig_dict)
         cherrypy.config['sponge'] = self.config_validator.cdict
+        self.application = self.config_validator.cdict['application']
+
+        cloader = ClassLoader(self.application['path'])
+        for classname, script_name in self.application['classes'].items():
+            klass = cloader.load(classname)
+            cherrypy.tree.mount(klass(), script_name)
+
+        cherrypy.server.quickstart()
+        cherrypy.engine.start()
+        cherrypy.engine.block()
 
     def create_project(self, options, project_name):
         path = self.fs.abspath(self.fs.join(options.project_dir, project_name))
