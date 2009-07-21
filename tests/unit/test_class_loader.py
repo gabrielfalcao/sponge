@@ -70,3 +70,38 @@ def test_class_loader_loads_from_file():
         mox.VerifyAll()
     finally:
         mox.UnsetStubs()
+
+def test_class_loader_loads_from_module():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+    import_func = __import__
+    io.__import__ = mox.CreateMockAnything()
+
+    class_path = '/full/path/to/module/'
+    module_name = 'module'
+    module_dir = '/full/path/to/'
+
+    io.os.path = mox.CreateMockAnything()
+    io.os.path.curdir = "."
+    io.os.path.abspath(".").AndReturn('should_be_old_abspath')
+
+    io.os.path.isdir(class_path).AndReturn(True)
+
+    io.os.path.split(class_path.rstrip('/')).AndReturn((module_dir, module_name))
+
+    io.os.chdir(module_dir)
+
+    module_mock = mox.CreateMockAnything()
+    module_mock.ClassIWantToLoad = 'should_be_expected_class'
+    io.__import__('module').AndReturn(module_mock)
+    io.os.chdir('should_be_old_abspath')
+
+    mox.ReplayAll()
+
+    try:
+        cl = io.ClassLoader(class_path)
+        assert_equals(cl.load('ClassIWantToLoad'), 'should_be_expected_class')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()

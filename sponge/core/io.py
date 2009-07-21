@@ -70,7 +70,10 @@ class ClassLoader(object):
             dir_name, file_name = os.path.split(path)
             module_name = os.path.splitext(file_name)[0]
             os.chdir(dir_name)
-
+            self.module = __import__(module_name)
+        else:
+            dir_name, module_name = os.path.split(path.rstrip('/'))
+            os.chdir(dir_name)
             self.module = __import__(module_name)
 
         os.chdir(old_path)
