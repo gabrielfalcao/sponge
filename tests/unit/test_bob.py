@@ -197,6 +197,8 @@ def test_bob_go():
         'autoreload': False,
         'application': {
             'path': '/path/to/project',
+            'template-dir': '/path/to/project/templates',
+            'image-dir': '/path/to/project/images',
             'classes': {
                 'SomeController': '/'
             }

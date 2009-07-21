@@ -72,9 +72,11 @@ class Bob(object):
         raw_yaml = codecs.open(full_path, 'r', 'utf-8').read()
         orig_dict = yaml.load(raw_yaml)
         self.config_validator = ConfigValidator(orig_dict)
+        cherrypy.config.update(self.config_validator.cdict)
         cherrypy.config['sponge'] = self.config_validator.cdict
         self.application = self.config_validator.cdict['application']
-
+        cherrypy.config['template.dir'] = self.application['template-dir']
+        cherrypy.config['image.dir'] = self.application['image-dir']
         cloader = ClassLoader(self.application['path'])
         for classname, script_name in self.application['classes'].items():
             klass = cloader.load(classname)

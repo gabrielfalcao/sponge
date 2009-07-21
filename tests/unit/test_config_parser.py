@@ -30,10 +30,17 @@ FULL_CONFIG_BASE = {
     'host': '0.0.0.0',
     'port': 80,
     'autoreload': False,
-    'application': {'classes': {'SomeController': '/'},
-                    'image-dir': '/home/user/projects/web-app/images',
-                    'path': '/home/user/projects/web-app/module',
-                    'template-dir': '/home/user/projects/web-app/html'},
+    'application': {
+        'classes': {
+            'SomeController': '/'
+        },
+        'image-dir': '/home/user/projects/web-app/images',
+        'path': '/home/user/projects/web-app/module',
+        'template-dir': '/home/user/projects/web-app/html'
+    },
+    'static': {
+        '/media': '/home/user/projects/web-app/static',
+    },
     'databases': {
         'general': 'mysql://root@localhost/general'
     }
@@ -369,3 +376,39 @@ def test_databases_invalid_controller_name_weird_charactes():
     assert_invalid_option('databases', '%$*',
                           cp.validate_mandatory)
 
+def test_validate_mandatory_requires_option_static():
+    d = FULL_CONFIG_BASE.copy()
+    del d['static']
+    cp = ConfigValidator(d)
+    assert_required_option('static', cp.validate_mandatory)
+
+def test_invalid_mandatory_option_static_int():
+    d = FULL_CONFIG_BASE.copy()
+    d['static'] = 10
+    cp = ConfigValidator(d)
+    assert_invalid_option('static', '10',
+                          cp.validate_mandatory)
+
+def test_invalid_mandatory_option_static_none():
+    d = FULL_CONFIG_BASE.copy()
+    d['static'] = None
+    cp = ConfigValidator(d)
+    assert_invalid_option('static', 'None',
+                          cp.validate_mandatory)
+
+def test_invalid_mandatory_option_static_string():
+    d = FULL_CONFIG_BASE.copy()
+    d['static'] = 'should_be_dict'
+    cp = ConfigValidator(d)
+    assert_invalid_option('static', 'should_be_dict',
+                          cp.validate_mandatory)
+
+def test_static_invalid_controller_name_weird_charactes():
+    d = FULL_CONFIG_BASE.copy()
+    d['static'] = {
+        '%$*': 'sqlite://asdasd',
+    }
+
+    cp = ConfigValidator(d)
+    assert_invalid_option('static', '%$*',
+                          cp.validate_mandatory)

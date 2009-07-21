@@ -42,6 +42,9 @@ class ConfigValidator(object):
         'application': {
             r'^[a-zA-Z_-][\w_-]*$': r'^[/].*$'
         },
+        'static': {
+            r'^[a-zA-Z/_-][\w_-]*$': r'^[/].*$'
+        },
         'databases': {
             r'^[\w_-]+$': '^.+$'
         }

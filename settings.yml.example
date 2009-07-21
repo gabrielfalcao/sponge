@@ -6,6 +6,9 @@ application:
   path: /home/user/projects/web-app/module
   template-dir: /home/user/projects/web-app/html
   image-dir: /home/user/projects/web-app/images
+  static:
+    /media: /home/user/projects/web-app/static_media
+
   classes:
     SomeController: /
 
