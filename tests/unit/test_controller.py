@@ -368,3 +368,22 @@ class TestPaginator:
 
         message = "%s's previous page number should be 1, got %r" % (page, got)
         assert got == expected, message
+
+    def test_page_validate_number_not_integer(self):
+        p = controller.Paginator(range(5), 2)
+        assert_raises(controller.PageNotAnInteger,
+                      p.validate_number,
+                      '1sda0')
+
+    def test_page_validate_number_less_than_1(self):
+        p = controller.Paginator(range(5), 2)
+        assert_raises(controller.EmptyPage,
+                      p.validate_number,
+                      -1)
+
+    def test_page_validate_number_when_not_allowing_1st_empty_page(self):
+        p = controller.Paginator([], 2,
+                                 allow_empty_first_page=False)
+        assert_raises(controller.EmptyPage,
+                      p.validate_number,
+                      1)
