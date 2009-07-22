@@ -239,3 +239,53 @@ def test_bob_go():
     finally:
         mox.UnsetStubs()
         bob.ClassLoader = class_loader
+
+def test_go_through_run():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+    mock_parser.parse_args().AndReturn(('should_be_options', ['go']))
+
+    options_mock = mox.CreateMockAnything()
+
+    file_system = mox.CreateMockAnything()
+
+    b = bob.Bob(parser=mock_parser, fs=file_system)
+    b.go = mox.CreateMockAnything()
+    b.go()
+    mox.ReplayAll()
+
+    try:
+        got = b.run()
+        assert got is 0, 'Expected 0, got %s' % repr(got)
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_go_through_main_run():
+    mox = Mox()
+    bobby = bob.Bob
+    old_sys = bob.sys
+
+    mock_parser = mox.CreateMockAnything()
+    file_system = mox.CreateMockAnything()
+
+    bob.sys = mox.CreateMockAnything()
+
+    bob_mock = mox.CreateMockAnything()
+    bob_instance_mock = mox.CreateMockAnything()
+    bob_instance_mock.run = mox.CreateMockAnything()
+
+    bob_instance_mock.run().AndReturn(0)
+    bob_mock.__call__(parser=mock_parser, fs=file_system).AndReturn(bob_instance_mock)
+    bob.sys.exit(0)
+    bob.Bob = bob_mock
+    mox.ReplayAll()
+
+    try:
+        got = bob.run(parser=mock_parser, fs=file_system)
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+        bob.Bob = bobby
+        bob.sys = old_sys
