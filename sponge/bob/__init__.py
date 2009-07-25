@@ -68,23 +68,33 @@ class Bob(object):
         return 0
 
     def go(self):
+        current_full_path = self.fs.current_dir()
         full_path = self.fs.current_dir("settings.yml")
         raw_yaml = codecs.open(full_path, 'r', 'utf-8').read()
         orig_dict = yaml.load(raw_yaml)
         self.config_validator = ConfigValidator(orig_dict)
+        cherrypy.config['tools.encode.on'] = True
+        cherrypy.config['tools.encode.encoding'] = 'utf-8'
+        cherrypy.config['tools.trailing_slash.on'] = True
+
         cherrypy.config.update(self.config_validator.cdict)
         cherrypy.config['sponge'] = self.config_validator.cdict
         self.application = self.config_validator.cdict['application']
-        cherrypy.config['template.dir'] = self.application['template-dir']
-        cherrypy.config['image.dir'] = self.application['image-dir']
-        cloader = ClassLoader(self.application['path'])
+        cherrypy.config['template.dir'] = self.fs.join(current_full_path, self.application['template-dir'])
+        cherrypy.config['image.dir'] = self.fs.join(current_full_path, self.application['image-dir'])
+        cloader = ClassLoader(self.fs.join(current_full_path, self.application['path']))
+        conf = {}
+        for media_path, media_dir in self.application['static'].items():
+            conf[media_path] = {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': self.fs.join(current_full_path, media_dir)
+            }
+
         for classname, script_name in self.application['classes'].items():
             klass = cloader.load(classname)
-            cherrypy.tree.mount(klass(), script_name)
+            cherrypy.tree.mount(klass(), script_name, conf)
 
-        cherrypy.server.quickstart()
-        cherrypy.engine.start()
-        cherrypy.engine.block()
+        cherrypy.quickstart()
 
     def create_project(self, options, project_name):
         path = self.fs.abspath(self.fs.join(options.project_dir, project_name))
