@@ -34,7 +34,14 @@ class ConfigValidator(object):
                   'type as parameter, got %s' % repr(vartype)
             self.vartype = vartype
 
-    mandatory = {
+    mandatory = [
+        'run-as',
+        'host',
+        'port',
+        'autoreload',
+        'application',
+    ]
+    possible = {
         'run-as': ['standalone', 'wsgi'],
         'host': r'^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$',
         'port': r'^\d+$',
@@ -49,6 +56,7 @@ class ConfigValidator(object):
             r'^[\w_-]+$': '^.+$'
         }
     }
+
     def __init__(self, cdict):
         if not isinstance(cdict, dict):
             raise TypeError, 'ConfigValidator takes a dict as parameter, got None.'
@@ -65,11 +73,15 @@ class ConfigValidator(object):
 
     def validate_mandatory(self):
         keys = self.cdict.keys()
-        for option in self.mandatory:
-            if option not in keys:
+        for option in self.possible:
+            if option in self.mandatory and \
+                option not in keys:
                 raise RequiredOptionError, \
                       'You get to set "%s" option within settings.yml' % option
-            validator = self.mandatory[option]
+            if option not in self.cdict.keys():
+                continue
+
+            validator = self.possible[option]
             raw_value = self.cdict[option]
             value = unicode(raw_value)
             if isinstance(validator, list):

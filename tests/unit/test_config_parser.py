@@ -346,11 +346,11 @@ def test_validate_sub_options_should_be_dict():
     assert_invalid_option('classes', '213',
                           cp.validate_mandatory)
 
-def test_validate_mandatory_requires_option_databases():
+def test_validate_mandatory_does_not_require_option_databases():
     d = FULL_CONFIG_BASE.copy()
     del d['databases']
     cp = ConfigValidator(d)
-    assert_required_option('databases', cp.validate_mandatory)
+    cp.validate_mandatory()
 
 def test_invalid_mandatory_option_databases_string():
     d = FULL_CONFIG_BASE.copy()
@@ -376,11 +376,11 @@ def test_databases_invalid_controller_name_weird_charactes():
     assert_invalid_option('databases', '%$*',
                           cp.validate_mandatory)
 
-def test_validate_mandatory_requires_option_static():
+def test_validate_mandatory_does_not_requires_option_static():
     d = FULL_CONFIG_BASE.copy()
     del d['static']
     cp = ConfigValidator(d)
-    assert_required_option('static', cp.validate_mandatory)
+    cp.validate_mandatory()
 
 def test_invalid_mandatory_option_static_int():
     d = FULL_CONFIG_BASE.copy()
