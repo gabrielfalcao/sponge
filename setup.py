@@ -38,8 +38,9 @@ setup(name='Sponge',
     packages=[
           'sponge',
     ],
+    package_dir = {"sponge": "sponge"},
     include_package_data = True,
     package_data = {
-        'sponge': ['*.zip'],
+        'sponge': ['data/project.zip'],
     },
 )
