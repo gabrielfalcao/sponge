@@ -28,8 +28,8 @@ import cherrypy
 from Cheetah.Template import Template
 
 from sponge import __version__ as version
-from sponge.core import ConfigValidator
-from sponge.core.io import FileSystem, ClassLoader
+from sponge.core import ConfigValidator, SpongeConfig
+from sponge.core.io import FileSystem
 
 class ProjectFolderExistsError(ValueError):
     pass
@@ -69,30 +69,14 @@ class Bob(object):
 
     def go(self):
         current_full_path = self.fs.current_dir()
+
         full_path = self.fs.current_dir("settings.yml")
         raw_yaml = codecs.open(full_path, 'r', 'utf-8').read()
         orig_dict = yaml.load(raw_yaml)
-        self.config_validator = ConfigValidator(orig_dict)
-        cherrypy.config['tools.encode.on'] = True
-        cherrypy.config['tools.encode.encoding'] = 'utf-8'
-        cherrypy.config['tools.trailing_slash.on'] = True
 
-        cherrypy.config.update(self.config_validator.cdict)
-        cherrypy.config['sponge'] = self.config_validator.cdict
-        self.application = self.config_validator.cdict['application']
-        cherrypy.config['template.dir'] = self.fs.join(current_full_path, self.application['template-dir'])
-        cherrypy.config['image.dir'] = self.fs.join(current_full_path, self.application['image-dir'])
-        cloader = ClassLoader(self.fs.join(current_full_path, self.application['path']))
-        conf = {}
-        for media_path, media_dir in self.application['static'].items():
-            conf[media_path] = {
-                'tools.staticdir.on': True,
-                'tools.staticdir.dir': self.fs.join(current_full_path, media_dir)
-            }
-
-        for classname, script_name in self.application['classes'].items():
-            klass = cloader.load(classname)
-            cherrypy.tree.mount(klass(), script_name, conf)
+        validator = ConfigValidator(orig_dict)
+        config = SpongeConfig(cherrypy.config, validator)
+        config.setup_all(current_full_path)
 
         cherrypy.quickstart()
 

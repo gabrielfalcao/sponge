@@ -41,7 +41,6 @@ def test_class_loader_loads_from_file():
     mox.StubOutWithMock(io, 'os')
     mox.StubOutWithMock(io.sys, 'path')
     io.os.path = mox.CreateMockAnything()
-    import_func = __import__
     io.__import__ = mox.CreateMockAnything()
 
     class_dir = '/full/path/to/module/or'
@@ -66,6 +65,7 @@ def test_class_loader_loads_from_file():
         assert_equals(cl.load('ClassIWantToLoad'), 'should_be_expected_class')
         mox.VerifyAll()
     finally:
+        io.__import__ = __import__
         mox.UnsetStubs()
 
 def test_class_loader_loads_from_module():
@@ -75,7 +75,6 @@ def test_class_loader_loads_from_module():
     mox.StubOutWithMock(io.sys, 'path')
 
     io.os.path = mox.CreateMockAnything()
-    import_func = __import__
     io.__import__ = mox.CreateMockAnything()
 
     class_path = '/full/path/to/module/'
@@ -102,4 +101,5 @@ def test_class_loader_loads_from_module():
         assert_equals(cl.load('ClassIWantToLoad'), 'should_be_expected_class')
         mox.VerifyAll()
     finally:
+        io.__import__ = __import__
         mox.UnsetStubs()

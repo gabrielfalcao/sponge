@@ -17,7 +17,11 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+import os
 import re
+import cherrypy
+
+from sponge.core.io import FileSystem, ClassLoader
 
 class InvalidValueError(Exception):
     pass
@@ -120,3 +124,66 @@ class ConfigValidator(object):
 
                 else:
                     self.raise_invalid(key, value)
+
+class SpongeConfig(object):
+    fs = FileSystem()
+
+    def __init__(self, config_dict, validator):
+        if not isinstance(config_dict, dict):
+            raise TypeError, 'SpongeConfig parameter 1 must be a dict, ' \
+                  'got %s.' % repr(config_dict)
+
+        if not isinstance(validator, ConfigValidator):
+            raise TypeError, 'SpongeConfig parameter 2 must be a ' \
+                  'ConfigValidator, got %s.' % repr(validator)
+
+        self.d = config_dict
+        self.validator = validator
+
+    def set_setting(self, key, value):
+        self.d[key] = value
+
+    def setup_all(self, current_full_path):
+        if not isinstance(current_full_path, basestring):
+            raise TypeError, 'SpongeConfig.setup_all takes a string, ' \
+                  'got %s.' % repr(current_full_path)
+
+        if not os.path.isabs(current_full_path):
+            raise TypeError, 'SpongeConfig.setup_all takes a absolute ' \
+                  'path, got %s.' % current_full_path
+
+
+        self.set_setting('tools.encode.on', True)
+        self.set_setting('tools.encode.encoding', 'utf-8')
+        self.set_setting('tools.trailing_slash', True)
+        self.set_setting('sponge', self.validator.cdict)
+
+        application = self.validator.cdict['application']
+
+        template_dir = application['template-dir']
+        template_path = self.fs.join(current_full_path, template_dir)
+        self.set_setting('template.dir', template_path)
+
+        image_dir = application['image-dir']
+        image_path = self.fs.join(current_full_path, image_dir)
+        self.set_setting('image.dir', image_path)
+
+        adir = application['path']
+        application_path = self.fs.join(current_full_path, adir)
+
+        cloader = ClassLoader(application_path)
+
+        meta_conf = {}
+        static = application.get('static') or {}
+        for media_url, media_dir in static.items():
+            media_path = self.fs.join(current_full_path, media_dir)
+            meta_conf[media_url] = {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': media_path
+            }
+
+        classes = application.get('classes') or {}
+        for classname, mountpoint in classes.items():
+            cls = cloader.load(classname)
+            cherrypy.tree.mount(apply(cls), mountpoint, meta_conf)
+
