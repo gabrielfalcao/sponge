@@ -29,7 +29,6 @@ class InvalidValueError(Exception):
 class RequiredOptionError(Exception):
     pass
 
-
 class ConfigValidator(object):
     class AnyValue(object):
         def __init__(self, vartype):
@@ -152,10 +151,11 @@ class SpongeConfig(object):
             raise TypeError, 'SpongeConfig.setup_all takes a absolute ' \
                   'path, got %s.' % current_full_path
 
-
+        self.set_setting('server.socket_port', int(self.validator.cdict['port']))
+        self.set_setting('server.socket_host', self.validator.cdict['host'])
         self.set_setting('tools.encode.on', True)
         self.set_setting('tools.encode.encoding', 'utf-8')
-        self.set_setting('tools.trailing_slash', True)
+        self.set_setting('tools.trailing_slash.on', True)
         self.set_setting('sponge', self.validator.cdict)
 
         application = self.validator.cdict['application']

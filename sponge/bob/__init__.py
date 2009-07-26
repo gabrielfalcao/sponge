@@ -21,23 +21,35 @@
 
 import os
 import sys
-import yaml
 import codecs
 import cherrypy
-
-from Cheetah.Template import Template
-
+import yaml
+import nose
 from sponge import __version__ as version
 from sponge.core import ConfigValidator, SpongeConfig
 from sponge.core.io import FileSystem
 
-class ProjectFolderExistsError(ValueError):
-    pass
+basic_config = {
+    'run-as': 'wsgi',
+    'host': '0.0.0.0',
+    'port': 4000,
+    'autoreload': True,
+    'application': {
+        'classes': {
+            'HelloWorldController': '/'
+        },
+        'image-dir': None,
+        'path': None,
+        'template-dir': None
+    },
+    'static': {
+        '/media': None,
+    },
+}
 
 class Bob(object):
-    """Sponge Bob is the responsible for managing the user's application and its modules."""
-
-    ProjectFolderExists = ProjectFolderExistsError
+    """Sponge Bob is the responsible for managing
+    the user's application and its modules."""
 
     def __init__(self, parser=None, fs=None):
         self.parser = parser
@@ -49,25 +61,26 @@ class Bob(object):
             self.parser = optparse.OptionParser(usage=usage,
                                                 description=__doc__,
                                                 version=version)
-
         self.fs = fs
         if not self.fs:
             self.fs = FileSystem()
 
     def run(self):
         options, args = self.parser.parse_args()
+        error_msg = '\nBob got a error when %s.\n    %s\n'
 
-        if args and args[0] == 'create':
-            self.create_project(options, args[1])
-            return 0
+        accepted = 'create', 'go', 'test'
+        if not args:
+            msg = '\nmissing argument, choose one in %s\n'
+            sys.stderr.write(msg % ", ".join(accepted))
 
-        if args and args[0] == 'go':
-            self.go()
-            return 0
+        if args[0] not in accepted:
+            msg = '\n%s is an invalid argument, choose one in %s\n'
+            sys.stderr.write(msg % (args[0], ", ".join(accepted)))
 
-        return 0
+        return getattr(self, args[0])(*args[1:])
 
-    def go(self):
+    def configure(self):
         current_full_path = self.fs.current_dir()
 
         full_path = self.fs.current_dir("settings.yml")
@@ -78,23 +91,56 @@ class Bob(object):
         config = SpongeConfig(cherrypy.config, validator)
         config.setup_all(current_full_path)
 
+    def go(self):
+        self.configure()
         cherrypy.quickstart()
 
-    def create_project(self, options, project_name):
-        path = self.fs.abspath(self.fs.join(options.project_dir, project_name))
+    def test(self):
+        self.configure()
+        for fullpath in self.fs.locate('tests', '__init__.py'):
+            path = os.path.dirname(fullpath).rstrip(os.sep)
+            self.fs.pushd(path)
+            module = path.split(os.sep)[-1]
+            try:
+                nose.runmodule(module)
+            except SystemExit:
+                pass
+
+            self.fs.popd()
+
+    def create(self, project_name=None):
+        if not project_name:
+            error_msg = 'missing project name, try ' \
+                        'something like "bob create foobar"'
+            sys.stderr.write("\n%s\n" % error_msg)
+            return 1
+
+        path = self.fs.current_dir(project_name)
+
         if self.fs.exists(path):
-            raise self.ProjectFolderExists("There is a folder at '%s' already, thus making it impossible to create a project there." % path)
+            error_msg = 'The path "%s" already exists. ' \
+                        'Maybe you could choose another ' \
+                        'name for your project ?' % path
+
+            sys.stderr.write("\n%s\n" % error_msg)
 
         self.fs.mkdir(path)
-        self.create_project_structure(options, project_name, path)
+        cfg = self.fs.open(self.fs.join(path, 'settings.yml'), 'w')
+        cdict = basic_config.copy()
+        media_path = self.fs.join(path, 'media')
+        cdict['static']['/media'] = media_path
 
-    def create_project_structure(self, options, project_name, project_path):
-        template_folder = self.fs.abspath(self.fs.join(self.fs.dirname(self.get_file_path()), "templates", "create_project"))
+        controller_path = self.fs.join(path, 'app', 'controllers.py')
+        cdict['application']['path'] = controller_path
 
-        for f in self.fs.locate(path=template_folder, match="*.*", recursive=True):
-            new_path = self.fs.rebase(path=f, origin_folder=template_folder, destiny_folder=project_path)
-            t = Template(self.fs.read_all(path=f, encoding='utf-8'), searchList=[])
-            self.fs.write_all(path=new_path, contents=str(t), encoding='utf-8', create_dir=True)
+        image_path = self.fs.join(path, 'media', 'img')
+        cdict['application']['image-dir'] = image_path
+
+        template_path = self.fs.join(path, 'templates')
+        cdict['application']['template-dir'] = template_path
+
+        cfg.write(yaml.dump(cdict))
+        cfg.close()
 
     def get_file_path(self):
         return __file__

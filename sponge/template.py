@@ -34,7 +34,10 @@ def make_url(url):
 
     return "%s/%s" % (base, url)
 
-def render_html(filename, context, template_path=None):
+def render_html(filename, context=None, template_path=None):
+    if context is None:
+        context = {}
+
     if not isinstance(filename, basestring):
         raise TypeError('sponge.template.render_html ' \
                         'takes a string as filename param, got %r.' % filename)

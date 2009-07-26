@@ -20,12 +20,52 @@
 
 import os
 import sys
+import codecs
 import fnmatch
 
 from glob import glob
-from os.path import abspath, join, dirname, curdir
+from os.path import abspath, join, dirname, curdir, exists
 
 class FileSystem(object):
+    stack = []
+
+    def __init__(self):
+        self.stack = list(self.stack)
+
+    @classmethod
+    def pushd(cls, path):
+        if not len(cls.stack):
+            cls.stack.append(cls.current_dir())
+
+        cls.stack.append(path)
+        os.chdir(path)
+
+    @classmethod
+    def popd(cls):
+        cls.stack.pop()
+        os.chdir(cls.stack[-1])
+
+
+    @classmethod
+    def filename(cls, path, with_extension=True):
+        fname = os.path.split(path)[1]
+        if not with_extension:
+            fname = os.path.splitext(fname)[0]
+
+        return fname
+
+    @classmethod
+    def dirname(cls, path):
+        return dirname(path)
+
+
+    def exists(cls, path):
+        return exists(path)
+
+    @classmethod
+    def mkdir(cls, path):
+        os.makedirs(path)
+
     @classmethod
     def current_dir(cls, path=""):
         '''Returns the absolute path for current dir, also join the
@@ -64,6 +104,14 @@ class FileSystem(object):
         else:
             return glob(join(root_path, match))
 
+    @classmethod
+    def open(cls, name, mode):
+        path = name
+        if not os.path.isabs(path):
+            path = self.current_dir(name)
+
+        return codecs.open(path, mode, 'utf-8')
+
 class ClassLoader(object):
     def __init__(self, path):
         if not isinstance(path, basestring):
@@ -77,7 +125,12 @@ class ClassLoader(object):
             dir_name, module_name = os.path.split(path.rstrip('/'))
 
         sys.path.append(dir_name)
-        self.module = __import__(module_name)
+        try:
+            self.module = __import__(module_name)
+        except ImportError:
+            raise ImportError, \
+                  'There is no module %s at %s' % (module_name,
+                                                   dir_name)
 
         sys.path.pop()
 

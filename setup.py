@@ -21,10 +21,12 @@
 import os
 import sys
 from setuptools import setup, find_packages
+from sponge import __version__
 
 setup(name='Sponge',
-    version='0.1.2',
-    description='A web framework aiming to get things dry, built on top of CherryPy and Genshi',
+    version=__version__,
+    description='A web framework aiming to get things dry, ' \
+                'built on top of CherryPy and Genshi',
     author=u'Gabriel Falcão',
     author_email='gabriel@nacaolivre.org',
     url='http://sponge.gabrielfalcao.com',
@@ -36,5 +38,8 @@ setup(name='Sponge',
     packages=[
           'sponge',
     ],
+    include_package_data = True,
+    package_data = {
+        'sponge': ['*.zip'],
+    },
 )
-
