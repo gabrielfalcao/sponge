@@ -35,10 +35,7 @@ setup(name='Sponge',
             'bob = sponge.bob:run',
         ]
     },
-    packages=[
-          'sponge',
-    ],
-    package_dir = {"sponge": "sponge"},
+    packages=find_packages(),
     include_package_data = True,
     package_data = {
         'sponge': ['data/project.zip'],

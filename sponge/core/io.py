@@ -22,6 +22,7 @@ import os
 import sys
 import codecs
 import fnmatch
+import zipfile
 
 from glob import glob
 from os.path import abspath, join, dirname, curdir, exists
@@ -45,7 +46,6 @@ class FileSystem(object):
         cls.stack.pop()
         os.chdir(cls.stack[-1])
 
-
     @classmethod
     def filename(cls, path, with_extension=True):
         fname = os.path.split(path)[1]
@@ -64,15 +64,19 @@ class FileSystem(object):
 
     @classmethod
     def mkdir(cls, path):
-        os.makedirs(path)
+        try:
+            os.makedirs(path)
+        except OSError, e:
+            if e.errno not in (17, ):
+                raise e
 
     @classmethod
     def current_dir(cls, path=""):
         '''Returns the absolute path for current dir, also join the
         current path with the given, if so.'''
-        to_return = abspath(curdir)
+        to_return = cls.abspath(curdir)
         if path:
-            return join(to_return, path)
+            return cls.join(to_return, path)
 
         return to_return
 
@@ -105,10 +109,35 @@ class FileSystem(object):
             return glob(join(root_path, match))
 
     @classmethod
+    def extract_zip(cls, filename, base_path='.', verbose=False):
+        base_path = cls.abspath(base_path)
+        output = lambda x: verbose and sys.stdout.write("%s\n" % x)
+
+        cls.pushd(base_path)
+        zfile = zipfile.ZipFile(filename)
+
+
+
+        output("Extracting files to %s" % base_path)
+        for file_name in zfile.namelist():
+            try:
+                output("  -> Unpacking %s" % file_name)
+                f = open(file_name, 'w')
+                f.write(zfile.read(file_name))
+                f.close()
+            except IOError:
+                output("---> Creating directory %s" % file_name)
+                try:
+                    cls.mkdir(file_name)
+                except IOError, e:
+                    pass
+        cls.popd()
+
+    @classmethod
     def open(cls, name, mode):
         path = name
         if not os.path.isabs(path):
-            path = self.current_dir(name)
+            path = cls.current_dir(name)
 
         return codecs.open(path, mode, 'utf-8')
 

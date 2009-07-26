@@ -23,11 +23,11 @@ import os
 import sys
 import codecs
 import cherrypy
-import yaml
 import nose
 from sponge import __version__ as version
 from sponge.core import ConfigValidator, SpongeConfig
 from sponge.core.io import FileSystem
+from sponge.data import SpongeData
 
 basic_config = {
     'run-as': 'wsgi',
@@ -40,10 +40,10 @@ basic_config = {
         },
         'image-dir': None,
         'path': None,
-        'template-dir': None
-    },
-    'static': {
-        '/media': None,
+        'template-dir': None,
+        'static': {
+            '/media': None,
+        },
     },
 }
 
@@ -69,7 +69,7 @@ class Bob(object):
         options, args = self.parser.parse_args()
         error_msg = '\nBob got a error when %s.\n    %s\n'
 
-        accepted = 'create', 'go', 'test'
+        accepted = 'create', 'go', 'test', 'start'
         if not args:
             msg = '\nmissing argument, choose one in %s\n'
             sys.stderr.write(msg % ", ".join(accepted))
@@ -81,6 +81,7 @@ class Bob(object):
         return getattr(self, args[0])(*args[1:])
 
     def configure(self):
+        import yaml
         current_full_path = self.fs.current_dir()
 
         full_path = self.fs.current_dir("settings.yml")
@@ -109,11 +110,12 @@ class Bob(object):
             self.fs.popd()
 
     def create(self, project_name=None):
+        import syck as yaml
         if not project_name:
             error_msg = 'missing project name, try ' \
                         'something like "bob create foobar"'
             sys.stderr.write("\n%s\n" % error_msg)
-            return 1
+            raise SystemExit(1)
 
         path = self.fs.current_dir(project_name)
 
@@ -123,12 +125,12 @@ class Bob(object):
                         'name for your project ?' % path
 
             sys.stderr.write("\n%s\n" % error_msg)
-
         self.fs.mkdir(path)
+
         cfg = self.fs.open(self.fs.join(path, 'settings.yml'), 'w')
         cdict = basic_config.copy()
         media_path = self.fs.join(path, 'media')
-        cdict['static']['/media'] = media_path
+        cdict['application']['static']['/media'] = media_path
 
         controller_path = self.fs.join(path, 'app', 'controllers.py')
         cdict['application']['path'] = controller_path
@@ -141,6 +143,14 @@ class Bob(object):
 
         cfg.write(yaml.dump(cdict))
         cfg.close()
+
+        zip_file = SpongeData.get_file('project.zip')
+        self.fs.extract_zip(zip_file, path)
+
+    def start(self, project_name=None):
+        self.create(project_name)
+        self.fs.pushd(project_name)
+        self.go()
 
     def get_file_path(self):
         return __file__
