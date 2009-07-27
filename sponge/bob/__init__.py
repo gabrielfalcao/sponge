@@ -21,7 +21,7 @@
 
 import os
 import sys
-import syck
+import yaml
 import codecs
 import cherrypy
 import optparse
@@ -93,7 +93,7 @@ class Bob(object):
 
         full_path = self.fs.current_dir("settings.yml")
         raw_yaml = self.fs.open(full_path, 'r').read()
-        orig_dict = syck.load(raw_yaml)
+        orig_dict = yaml.load(raw_yaml)
 
         validator = ConfigValidator(orig_dict)
         config = SpongeConfig(cherrypy.config, validator)
@@ -136,7 +136,7 @@ class Bob(object):
         template_path = self.fs.join(path, 'templates')
         cdict['application']['template-dir'] = template_path
 
-        cfg.write(syck.dump(cdict))
+        cfg.write(yaml.dump(cdict))
         cfg.close()
 
         zip_file = SpongeData.get_file('project.zip')
