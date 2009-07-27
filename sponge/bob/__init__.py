@@ -108,7 +108,7 @@ class Bob(object):
             error_msg = 'missing project name, try ' \
                         'something like "bob create foobar"'
             sys.stderr.write("\n%s\n" % error_msg)
-            raise SystemExit(1)
+            self.exit()
 
         path = self.fs.current_dir(project_name)
 
@@ -118,6 +118,8 @@ class Bob(object):
                         'name for your project ?' % path
 
             sys.stderr.write("\n%s\n" % error_msg)
+            self.exit()
+
         self.fs.mkdir(path)
 
         cfg = self.fs.open(self.fs.join(path, 'settings.yml'), 'w')

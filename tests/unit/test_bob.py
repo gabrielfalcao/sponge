@@ -210,3 +210,34 @@ def test_go():
     finally:
         mox.UnsetStubs()
 
+def test_create_fails_without_argument():
+    b = bob.Bob()
+    sys.stderr = StringIO()
+    assert_raises(SystemExit, b.create, None)
+    assert_equals(sys.stderr.getvalue(),
+                  '\nmissing project name, try something like ' \
+                  '"bob create foobar"\n')
+    sys.stderr = sys.__stderr__
+
+def test_create_fails_if_path_already_exists():
+    mox = Mox()
+    b = bob.Bob()
+    b.fs = mox.CreateMockAnything()
+
+    b.fs.current_dir('my-project'). \
+         AndReturn('/full/path/to/my-project')
+
+    b.fs.exists('/full/path/to/my-project'). \
+         AndReturn(True)
+
+    mox.ReplayAll()
+    try:
+        sys.stderr = StringIO()
+        assert_raises(SystemExit, b.create, 'my-project')
+        assert_equals(sys.stderr.getvalue(),
+                      '\nThe path "/full/path/to/my-project" ' \
+                      'already exists. Maybe you could choose ' \
+                      'another name for your project ?\n')
+    finally:
+        sys.stderr = sys.__stderr__
+
