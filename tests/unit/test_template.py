@@ -98,9 +98,9 @@ def test_templates_render_html_raises_context_nondict():
     assert_raises(TypeError,
                   template.render_html,
                   'index.html',
-                  None,
+                  'a string',
                   exc_pattern=r'sponge.template.render_html ' \
-                  'takes a dict as context param, got None.')
+                  'takes a dict as context param, got \'a string\'.')
     assert_raises(TypeError,
                   template.render_html,
                   'index.html',

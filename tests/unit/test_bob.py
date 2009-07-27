@@ -18,7 +18,7 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
-
+import sys
 import yaml
 import cherrypy
 import optparse
@@ -26,154 +26,88 @@ import optparse
 from os.path import abspath, join, dirname
 from mox import Mox
 from nose.tools import assert_equals
+from utils import assert_raises
+
 from sponge import bob
+from StringIO import StringIO
 
 def test_can_create_bob():
     b = bob.Bob()
     assert b
     assert isinstance(b, bob.Bob)
 
-def test_run():
+def test_run_fails_with_unknown_args():
     mox = Mox()
 
     mock_parser = mox.CreateMockAnything()
-    mock_parser.parse_args().AndReturn(("options", "args"))
+    mock_parser.parse_args().AndReturn(("options", ["args"]))
 
     mox.ReplayAll()
 
     b = bob.Bob(parser=mock_parser)
+    sys.stderr = StringIO()
+    assert_raises(SystemExit, b.run)
+    assert_equals(sys.stderr.getvalue(),
+                  '\nargs is an invalid argument, choose one ' \
+                  'in create, go, test, start\n')
+    sys.stderr = sys.__stderr__
+    mox.VerifyAll()
+
+def test_run_fails_without_args():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+    mock_parser.parse_args().AndReturn(("options", []))
+
+    mox.ReplayAll()
+
+    b = bob.Bob(parser=mock_parser)
+    sys.stderr = StringIO()
+    assert_raises(SystemExit, b.run)
+    assert_equals(sys.stderr.getvalue(),
+                  '\nmissing argument, choose one ' \
+                  'in create, go, test, start\n')
+    sys.stderr = sys.__stderr__
+    mox.VerifyAll()
+
+def test_run_calls_create_with_second_argument():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+    mock_parser.parse_args().AndReturn(("options", ['create', 'some']))
+    b = bob.Bob(parser=mock_parser)
+    b.create = mox.CreateMockAnything()
+    b.create('some')
+
+    mox.ReplayAll()
     b.run()
-
     mox.VerifyAll()
 
-def test_create_project_raises_if_folder_already_exists():
+def test_run_calls_go():
     mox = Mox()
 
     mock_parser = mox.CreateMockAnything()
-
-    options_mock = mox.CreateMockAnything()
-    options_mock.project_dir = "something"
-
-    file_system = mox.CreateMockAnything()
-    file_system.join("something", "some project").AndReturn("something/some project")
-    file_system.abspath("something/some project").AndReturn("/something/some project")
-    file_system.exists("/something/some project").AndReturn(True)
+    mock_parser.parse_args().AndReturn(("options", ['go']))
+    b = bob.Bob(parser=mock_parser)
+    b.go = mox.CreateMockAnything()
+    b.go()
 
     mox.ReplayAll()
-
-    b = bob.Bob(parser=mock_parser, fs=file_system)
-    try:
-        b.create_project(options_mock,"some project")
-    except bob.Bob.ProjectFolderExists, err:
-        assert str(err) == "There is a folder at '/something/some project' already, thus making it impossible to create a project there."
-        mox.VerifyAll()
-        return
-
-    assert False, "Should not have reached this far."
-
-def test_create_project_creates_folder_if_one_does_not_exist():
-    mox = Mox()
-
-    mock_parser = mox.CreateMockAnything()
-
-    options_mock = mox.CreateMockAnything()
-    options_mock.project_dir = "something"
-
-    file_system = mox.CreateMockAnything()
-    file_system.join("something", "some project").AndReturn("something/some project")
-    file_system.abspath("something/some project").AndReturn("/something/some project")
-    file_system.exists("/something/some project").AndReturn(False)
-    file_system.mkdir("/something/some project")
-
-    b = bob.Bob(parser=mock_parser, fs=file_system)
-    mox.StubOutWithMock(b, 'create_project_structure')
-    b.create_project_structure(options_mock, "some project", "/something/some project")
-
-    mox.ReplayAll()
-
-    try:
-        b.create_project(options_mock,"some project")
-        mox.VerifyAll()
-    finally:
-        mox.UnsetStubs()
-
-def test_create_project_calls_create_structure():
-    mox = Mox()
-
-    mock_parser = mox.CreateMockAnything()
-    options_mock = mox.CreateMockAnything()
-    options_mock.project_dir = "something"
-
-    file_system = mox.CreateMockAnything()
-    file_system.join("something", "some project").AndReturn("something/some project")
-    file_system.abspath("something/some project").AndReturn("/something/some project")
-    file_system.exists("/something/some project").AndReturn(False)
-    file_system.mkdir("/something/some project")
-
-    b = bob.Bob(parser=mock_parser, fs=file_system)
-    mox.StubOutWithMock(b, 'create_project_structure')
-    b.create_project_structure(options_mock, "some project", "/something/some project")
-    mox.ReplayAll()
-
-    try:
-        b.create_project(options_mock,"some project")
-        mox.VerifyAll()
-    finally:
-        mox.UnsetStubs()
-
-def test_create_structure():
-    mox = Mox()
-    mock_parser = mox.CreateMockAnything()
-
-    options_mock = mox.CreateMockAnything()
-    options_mock.project_dir = "something"
-
-    file_system = mox.CreateMockAnything()
-
-    b = bob.Bob(parser=mock_parser, fs=file_system)
-
-    file_path = bob.Bob.get_file_path
-    bob.Bob.get_file_path = lambda self: "fake file"
-
-    path = "/some/path/to/fake file"
-
-    file_system.dirname('fake file').AndReturn("/some/path/to/fake file")
-    file_system.join(path, "templates", "create_project").AndReturn("templates/create_project")
-    file_system.abspath("templates/create_project").AndReturn("/templates/create_project")
-
-    file_system.locate(path="/templates/create_project", match="*.*", recursive=True).AndReturn(["/templates/create_project/some_file.txt"])
-    file_system.rebase(destiny_folder='/something/some project', origin_folder='/templates/create_project', path='/templates/create_project/some_file.txt').AndReturn("/something/some project/some_file.txt")
-
-    file_system.read_all(encoding='utf-8', path='/templates/create_project/some_file.txt').AndReturn("some template")
-    file_system.write_all(contents='some template', create_dir=True, encoding='utf-8', path='/something/some project/some_file.txt')
-
-    mox.ReplayAll()
-
-    b.create_project_structure(options_mock, "some project", "/something/some project")
+    b.run()
     mox.VerifyAll()
 
-def test_create_project_through_run():
+def test_run_calls_test():
     mox = Mox()
 
     mock_parser = mox.CreateMockAnything()
-    mock_parser.parse_args().AndReturn(('should_be_options', ['create', 'should_be_project_name']))
+    mock_parser.parse_args().AndReturn(("options", ['test']))
+    b = bob.Bob(parser=mock_parser)
+    b.test = mox.CreateMockAnything()
+    b.test()
 
-    options_mock = mox.CreateMockAnything()
-    options_mock.project_dir = "something"
-
-    file_system = mox.CreateMockAnything()
-
-    b = bob.Bob(parser=mock_parser, fs=file_system)
-    b.create_project = mox.CreateMockAnything()
-    b.create_project('should_be_options', 'should_be_project_name')
     mox.ReplayAll()
-
-    try:
-        got = b.run()
-        assert got is 0, 'Expected 0, got %s' % repr(got)
-        mox.VerifyAll()
-    finally:
-        mox.UnsetStubs()
+    b.run()
+    mox.VerifyAll()
 
 def test_go_through_run():
     mox = Mox()
@@ -192,10 +126,22 @@ def test_go_through_run():
 
     try:
         got = b.run()
-        assert got is 0, 'Expected 0, got %s' % repr(got)
         mox.VerifyAll()
     finally:
         mox.UnsetStubs()
+
+def test_run_calls_start_with_second_argument():
+    mox = Mox()
+
+    mock_parser = mox.CreateMockAnything()
+    mock_parser.parse_args().AndReturn(("options", ['start', 'some']))
+    b = bob.Bob(parser=mock_parser)
+    b.start = mox.CreateMockAnything()
+    b.start('some')
+
+    mox.ReplayAll()
+    b.run()
+    mox.VerifyAll()
 
 def test_go_through_main_run():
     mox = Mox()
@@ -224,3 +170,61 @@ def test_go_through_main_run():
         mox.UnsetStubs()
         bob.Bob = bobby
         bob.sys = old_sys
+
+def test_exit_without_args():
+    mox = Mox()
+    mock_parser = mox.CreateMockAnything()
+
+    b = bob.Bob(parser=mock_parser)
+    assert_raises(SystemExit, b.exit, exc_pattern=r'1')
+
+def test_exit_with_specific_exit_code():
+    mox = Mox()
+    mock_parser = mox.CreateMockAnything()
+
+    b = bob.Bob(parser=mock_parser)
+    assert_raises(SystemExit, b.exit, 100, exc_pattern=r'100')
+
+def test_configure():
+    mox = Mox()
+    mock_parser = mox.CreateMockAnything()
+
+    mox.StubOutWithMock(bob, 'syck')
+    config_validator = bob.ConfigValidator
+    sponge_config = bob.SpongeConfig
+
+    bob.ConfigValidator = mox.CreateMockAnything()
+    bob.SpongeConfig = mox.CreateMockAnything()
+
+    b = bob.Bob(parser=mock_parser)
+    b.fs = mox.CreateMockAnything()
+
+    b.fs.current_dir().AndReturn('should_be_current_dir')
+    b.fs.current_dir('settings.yml'). \
+         AndReturn('/current/path/settings-yaml')
+
+    file_mock = mox.CreateMockAnything()
+    b.fs.open('/current/path/settings-yaml', 'r'). \
+         AndReturn(file_mock)
+
+    file_mock.read().AndReturn('should-be-raw-yaml-text')
+    bob.syck.load('should-be-raw-yaml-text'). \
+        AndReturn('should-be-config-dict')
+
+    bob.ConfigValidator('should-be-config-dict'). \
+        AndReturn('should-be-validator')
+
+    config_mock = mox.CreateMockAnything()
+    bob.SpongeConfig(cherrypy.config, 'should-be-validator'). \
+        AndReturn(config_mock)
+
+    config_mock.setup_all('should_be_current_dir')
+
+    mox.ReplayAll()
+    try:
+        b.configure()
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+        bob.ConfigValidator = config_validator
+        bob.SpongeConfig = sponge_config

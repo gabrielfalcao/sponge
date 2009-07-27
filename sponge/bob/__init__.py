@@ -21,9 +21,12 @@
 
 import os
 import sys
+import syck
 import codecs
 import cherrypy
+import optparse
 import nose
+
 from sponge import __version__ as version
 from sponge.core import ConfigValidator, SpongeConfig
 from sponge.core.io import FileSystem
@@ -54,7 +57,6 @@ class Bob(object):
     def __init__(self, parser=None, fs=None):
         self.parser = parser
         if not self.parser:
-            import optparse
             usage = "\n>>> %s <<<\n\nTo use type %%prog [options]" \
                     " or %%prog -h (--help) for help with" \
                     " the available options" % self.__doc__
@@ -65,28 +67,33 @@ class Bob(object):
         if not self.fs:
             self.fs = FileSystem()
 
+    def exit(self, code=1):
+        raise SystemExit(code)
+
     def run(self):
         options, args = self.parser.parse_args()
         error_msg = '\nBob got a error when %s.\n    %s\n'
 
         accepted = 'create', 'go', 'test', 'start'
+
         if not args:
             msg = '\nmissing argument, choose one in %s\n'
             sys.stderr.write(msg % ", ".join(accepted))
+            self.exit()
 
         if args[0] not in accepted:
             msg = '\n%s is an invalid argument, choose one in %s\n'
             sys.stderr.write(msg % (args[0], ", ".join(accepted)))
+            self.exit()
 
         return getattr(self, args[0])(*args[1:])
 
     def configure(self):
-        import yaml
         current_full_path = self.fs.current_dir()
 
         full_path = self.fs.current_dir("settings.yml")
-        raw_yaml = codecs.open(full_path, 'r', 'utf-8').read()
-        orig_dict = yaml.load(raw_yaml)
+        raw_yaml = self.fs.open(full_path, 'r').read()
+        orig_dict = syck.load(raw_yaml)
 
         validator = ConfigValidator(orig_dict)
         config = SpongeConfig(cherrypy.config, validator)
@@ -110,7 +117,6 @@ class Bob(object):
             self.fs.popd()
 
     def create(self, project_name=None):
-        import syck as yaml
         if not project_name:
             error_msg = 'missing project name, try ' \
                         'something like "bob create foobar"'
@@ -141,7 +147,7 @@ class Bob(object):
         template_path = self.fs.join(path, 'templates')
         cdict['application']['template-dir'] = template_path
 
-        cfg.write(yaml.dump(cdict))
+        cfg.write(syck.dump(cdict))
         cfg.close()
 
         zip_file = SpongeData.get_file('project.zip')
