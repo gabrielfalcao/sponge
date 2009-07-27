@@ -49,7 +49,7 @@ def test_run_fails_with_unknown_args():
     assert_raises(SystemExit, b.run)
     assert_equals(sys.stderr.getvalue(),
                   '\nargs is an invalid argument, choose one ' \
-                  'in create, go, test, start\n')
+                  'in create, go, start\n')
     sys.stderr = sys.__stderr__
     mox.VerifyAll()
 
@@ -66,7 +66,7 @@ def test_run_fails_without_args():
     assert_raises(SystemExit, b.run)
     assert_equals(sys.stderr.getvalue(),
                   '\nmissing argument, choose one ' \
-                  'in create, go, test, start\n')
+                  'in create, go, start\n')
     sys.stderr = sys.__stderr__
     mox.VerifyAll()
 
@@ -95,40 +95,6 @@ def test_run_calls_go():
     mox.ReplayAll()
     b.run()
     mox.VerifyAll()
-
-def test_run_calls_test():
-    mox = Mox()
-
-    mock_parser = mox.CreateMockAnything()
-    mock_parser.parse_args().AndReturn(("options", ['test']))
-    b = bob.Bob(parser=mock_parser)
-    b.test = mox.CreateMockAnything()
-    b.test()
-
-    mox.ReplayAll()
-    b.run()
-    mox.VerifyAll()
-
-def test_go_through_run():
-    mox = Mox()
-
-    mock_parser = mox.CreateMockAnything()
-    mock_parser.parse_args().AndReturn(('should_be_options', ['go']))
-
-    options_mock = mox.CreateMockAnything()
-
-    file_system = mox.CreateMockAnything()
-
-    b = bob.Bob(parser=mock_parser, fs=file_system)
-    b.go = mox.CreateMockAnything()
-    b.go()
-    mox.ReplayAll()
-
-    try:
-        got = b.run()
-        mox.VerifyAll()
-    finally:
-        mox.UnsetStubs()
 
 def test_run_calls_start_with_second_argument():
     mox = Mox()
@@ -228,3 +194,19 @@ def test_configure():
         mox.UnsetStubs()
         bob.ConfigValidator = config_validator
         bob.SpongeConfig = sponge_config
+
+def test_go():
+    mox = Mox()
+    mox.StubOutWithMock(bob, 'cherrypy')
+
+    b = bob.Bob()
+    b.configure = mox.CreateMockAnything()
+    b.configure()
+    bob.cherrypy.quickstart()
+    mox.ReplayAll()
+    try:
+        b.go()
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+

@@ -74,7 +74,7 @@ class Bob(object):
         options, args = self.parser.parse_args()
         error_msg = '\nBob got a error when %s.\n    %s\n'
 
-        accepted = 'create', 'go', 'test', 'start'
+        accepted = 'create', 'go', 'start'
 
         if not args:
             msg = '\nmissing argument, choose one in %s\n'
@@ -102,19 +102,6 @@ class Bob(object):
     def go(self):
         self.configure()
         cherrypy.quickstart()
-
-    def test(self):
-        self.configure()
-        for fullpath in self.fs.locate('tests', '__init__.py'):
-            path = os.path.dirname(fullpath).rstrip(os.sep)
-            self.fs.pushd(path)
-            module = path.split(os.sep)[-1]
-            try:
-                nose.runmodule(module)
-            except SystemExit:
-                pass
-
-            self.fs.popd()
 
     def create(self, project_name=None):
         if not project_name:
