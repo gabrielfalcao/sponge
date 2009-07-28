@@ -18,6 +18,7 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+
 import sys
 import yaml
 import cherrypy
@@ -30,6 +31,24 @@ from utils import assert_raises
 
 from sponge import bob
 from StringIO import StringIO
+
+basic_config = {
+    'run-as': 'wsgi',
+    'host': '0.0.0.0',
+    'port': 4000,
+    'autoreload': True,
+    'application': {
+        'classes': {
+            'HelloWorldController': '/'
+        },
+        'image-dir': None,
+        'path': None,
+        'template-dir': None,
+        'static': {
+            '/media': None,
+        },
+    },
+}
 
 def test_can_create_bob():
     b = bob.Bob()
@@ -155,7 +174,7 @@ def test_configure():
     mox = Mox()
     mock_parser = mox.CreateMockAnything()
 
-    mox.StubOutWithMock(bob, 'syck')
+    mox.StubOutWithMock(bob, 'yaml')
     config_validator = bob.ConfigValidator
     sponge_config = bob.SpongeConfig
 
@@ -174,7 +193,7 @@ def test_configure():
          AndReturn(file_mock)
 
     file_mock.read().AndReturn('should-be-raw-yaml-text')
-    bob.syck.load('should-be-raw-yaml-text'). \
+    bob.yaml.load('should-be-raw-yaml-text'). \
         AndReturn('should-be-config-dict')
 
     bob.ConfigValidator('should-be-config-dict'). \
@@ -241,3 +260,47 @@ def test_create_fails_if_path_already_exists():
     finally:
         sys.stderr = sys.__stderr__
 
+def test_create_success():
+    mox = Mox()
+    b = bob.Bob()
+    b.fs = mox.CreateMockAnything()
+    b.fs.join = join
+
+    mox.StubOutWithMock(bob, 'SpongeData')
+    mox.StubOutWithMock(bob, 'yaml')
+
+    full_path = '/full/path/to/my-project'
+    b.fs.current_dir('my-project'). \
+         AndReturn(full_path)
+
+    b.fs.exists(full_path). \
+         AndReturn(False)
+
+    b.fs.mkdir(full_path)
+
+    file_mock = mox.CreateMockAnything()
+    b.fs.open(join(full_path, 'settings.yml'), 'w'). \
+         AndReturn(file_mock)
+
+    expected_dict = basic_config.copy()
+    expected_dict['application'].update({
+        'static': {
+            '/media': join(full_path, 'media')
+        },
+        'path': join(full_path, 'app', 'controllers.py'),
+        'image-dir': join(full_path, 'media', 'img'),
+        'template-dir': join(full_path, 'templates'),
+    })
+
+    bob.yaml.dump(expected_dict).AndReturn('should-be-a-yaml')
+    file_mock.write('should-be-a-yaml')
+    file_mock.close()
+
+    bob.SpongeData.get_file('project.zip'). \
+        AndReturn('should-be-path-to-zip-file')
+
+    b.fs.extract_zip('should-be-path-to-zip-file', full_path)
+
+    mox.ReplayAll()
+    b.create('my-project')
+    mox.VerifyAll()
