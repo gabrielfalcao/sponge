@@ -19,6 +19,7 @@
 # Boston, MA 02111-1307, USA.
 import os
 import re
+import sys
 import cherrypy
 
 from sponge.core.io import FileSystem, ClassLoader
@@ -171,7 +172,9 @@ class SpongeConfig(object):
         adir = application['path']
         application_path = self.fs.join(current_full_path, adir)
 
+
         cloader = ClassLoader(application_path)
+
 
         meta_conf = {}
         static = application.get('static') or {}
@@ -184,6 +187,14 @@ class SpongeConfig(object):
 
         classes = application.get('classes') or {}
         for classname, mountpoint in classes.items():
-            cls = cloader.load(classname)
+            try:
+                cls = cloader.load(classname)
+            except Exception:
+                sys.stderr.write('\nSponge could not find the class %s ' \
+                                 'at %s, verify if your settings.yml ' \
+                                 'is configured as well\n' % (classname,
+                                                              application_path))
+                raise SystemExit(1)
+
             cherrypy.tree.mount(apply(cls), mountpoint, meta_conf)
 
