@@ -38,14 +38,15 @@ class ImageHandler(object):
             raise TypeError, 'The path given to ImageHandler ' \
                   'to cache must be a string, got %s' % repr(cache_at)
 
-        self.set_should_cache(True)
-        self.cache_path = cache_at
+        if cache_at:
+            self.set_should_cache(True)
+            self.cache_path = cache_at
 
-        if not FileSystem.exists(cache_at):
-            raise InvalidCachePath, \
-                  'The given path (%s) does not exist, ' \
-                  'so that ImageHandler can not save ' \
-                  'cache files there.' % cache_at
+            if not FileSystem.exists(cache_at):
+                raise InvalidCachePath, \
+                      'The given path (%s) does not exist, ' \
+                      'so that ImageHandler can not save ' \
+                      'cache files there.' % cache_at
 
     def get_cache_path(self, path):
         return FileSystem.join(self.cache_path, path.lstrip('/'))
@@ -61,10 +62,9 @@ class ImageHandler(object):
         path = "/".join(args)
 
         image = jpeg(path=path)
-        cache_full_path = self.get_cache_path(path)
 
         if self.should_cache:
-
+            cache_full_path = self.get_cache_path(path)
             if FileSystem.exists(cache_full_path):
                 return serve_file(cache_full_path, 'image/jpeg')
 
@@ -80,6 +80,7 @@ class ImageHandler(object):
                                 height=height)
 
         if self.should_cache:
+            cache_full_path = self.get_cache_path(path)
             dir_path = FileSystem.dirname(cache_full_path)
             FileSystem.mkdir(dir_path)
             img_file = open(cache_full_path, 'w')

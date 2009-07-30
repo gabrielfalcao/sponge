@@ -62,7 +62,6 @@ def render_html(filename, context=None, template_path=None):
             raise LookupError('You must configure "template.dir" string in ' \
                               'CherryPy or pass template_path param to render_html')
 
-
     elif not isinstance(template_path, basestring):
         raise TypeError('sponge.template.render_html ' \
                         'takes a string as template_path param, got %r.' % template_path)

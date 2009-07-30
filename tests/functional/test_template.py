@@ -37,11 +37,6 @@ def test_render_html_param_filename_should_not_be_empty():
                   exc_pattern=r'sponge.template.render_html ' \
                   'filename param can not be empty.')
 
-def test_render_html_param_context_takes_dict():
-    assert_raises(TypeError, template.render_html, 'index.html', None,
-                  exc_pattern=r'sponge.template.render_html ' \
-                  'takes a dict as context param, got None.')
-
 def test_render_html_complains_cherrypy_not_configured_when_no_template_path_specified():
     assert_raises(LookupError, template.render_html, 'index.html', {},
                   exc_pattern=r'You must configure "template.dir" ' \
