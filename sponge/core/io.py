@@ -58,7 +58,7 @@ class FileSystem(object):
     def dirname(cls, path):
         return dirname(path)
 
-
+    @classmethod
     def exists(cls, path):
         return exists(path)
 
@@ -67,8 +67,13 @@ class FileSystem(object):
         try:
             os.makedirs(path)
         except OSError, e:
+            # ignore if path already exists
             if e.errno not in (17, ):
                 raise e
+            else:
+                if not os.path.isdir(path):
+                    # but the path must be a dir to ignore its creation
+                    raise e
 
     @classmethod
     def current_dir(cls, path=""):
