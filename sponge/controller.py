@@ -20,30 +20,71 @@
 import re
 import Image
 import cherrypy
-
+from cherrypy.lib.static import serve_file
 from math import ceil
-
+from sponge.core.io import FileSystem
 from sponge.image import jpeg, picture
+
+class InvalidCachePath(IOError):
+    pass
 
 class ImageHandler(object):
     exposed = True
+    should_cache = False
+    cache_path = None
+
+    def __init__(self, cache_at=None):
+        if not isinstance(cache_at, (basestring, type(None))):
+            raise TypeError, 'The path given to ImageHandler ' \
+                  'to cache must be a string, got %s' % repr(cache_at)
+
+        self.set_should_cache(True)
+        self.cache_path = cache_at
+
+        if not FileSystem.exists(cache_at):
+            raise InvalidCachePath, \
+                  'The given path (%s) does not exist, ' \
+                  'so that ImageHandler can not save ' \
+                  'cache files there.' % cache_at
+
+    def get_cache_path(self, path):
+        return FileSystem.join(self.cache_path, path.lstrip('/'))
+
+    def set_should_cache(self, value):
+        self.should_cache = value
 
     def __call__(self, *args, **kw):
         if len(args) < 1:
             cherrypy.response.status = 404
             return "not found"
 
-        image = jpeg(path="/".join(args))
+        path = "/".join(args)
+
+        image = jpeg(path=path)
+        cache_full_path = self.get_cache_path(path)
+
+        if self.should_cache:
+
+            if FileSystem.exists(cache_full_path):
+                return serve_file(cache_full_path, 'image/jpeg')
 
         if len(args) >= 3 and args[0] == 'crop':
-            proportion = re.match(r'(?P<width>\d+)x(?P<height>\d+)', args[1])
+            proportion = re.match(r'(?P<width>\d+)x(?P<height>\d+)',
+                                  args[1])
             if proportion:
                 width = int(proportion.group('width'))
                 height = int(proportion.group('height'))
 
-                return picture(path="/".join(args[2:]),
-                               width=width,
-                               height=height)
+                image = picture(path="/".join(args[2:]),
+                                width=width,
+                                height=height)
+
+        if self.should_cache:
+            dir_path = FileSystem.dirname(cache_full_path)
+            FileSystem.mkdir(dir_path)
+            img_file = open(cache_full_path, 'w')
+            img_file.write(image)
+            img_file.close()
 
         return image
 
