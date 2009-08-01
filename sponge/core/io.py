@@ -31,7 +31,7 @@ class FileSystem(object):
     stack = []
 
     def __init__(self):
-        self.stack = list(self.stack)
+        self.stack = []
 
     @classmethod
     def pushd(cls, path):
