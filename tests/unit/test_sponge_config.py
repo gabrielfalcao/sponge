@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import cherrypy
+from StringIO import StringIO
 from mox import Mox
 from nose.tools import assert_equals
 from utils import assert_raises
@@ -91,6 +93,41 @@ def test_can_setup_all():
     mox.ReplayAll()
     try:
         sp.setup_all('/absolute/path/')
+        mox.VerifyAll()
+    finally:
+        core.ClassLoader = class_loader
+        core.cherrypy = cherrypy
+
+def test_setup_all_fails_on_import():
+    mox = Mox()
+    d = {}
+    class_loader = core.ClassLoader
+    cherrypy = core.cherrypy
+    core.ClassLoader = mox.CreateMockAnything()
+    core.cherrypy = mox.CreateMockAnything()
+    core.cherrypy.tree = mox.CreateMockAnything()
+
+    cloader_mock = mox.CreateMockAnything()
+    core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
+
+    class_mock = mox.CreateMockAnything()
+    cloader_mock.load('SomeController').AndRaise(Exception('foo error'))
+
+    cf = core.ConfigValidator(config_dict)
+    sp = core.SpongeConfig(d, cf)
+    mox.ReplayAll()
+    try:
+        sys.stderr = StringIO()
+        assert_raises(SystemExit, sp.setup_all, '/absolute/path/')
+        got = sys.stderr.getvalue()
+        sys.stderr = sys.__stderr__
+
+        format_args = 'SomeController', \
+                      '/absolute/path/path/to/project', \
+                      'foo error'
+        assert_equals(got, '\nSponge could not find the class %s ' \
+                     'at %s, verify if your settings.yml ' \
+                     'is configured as well\n%s\n' % format_args)
         mox.VerifyAll()
     finally:
         core.ClassLoader = class_loader

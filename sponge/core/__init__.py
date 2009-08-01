@@ -189,11 +189,13 @@ class SpongeConfig(object):
         for classname, mountpoint in classes.items():
             try:
                 cls = cloader.load(classname)
-            except Exception:
+
+            except Exception, e:
                 sys.stderr.write('\nSponge could not find the class %s ' \
                                  'at %s, verify if your settings.yml ' \
-                                 'is configured as well\n' % (classname,
-                                                              application_path))
+                                 'is configured as well\n%s\n' % (classname,
+                                                                  application_path,
+                                                                  unicode(e)))
                 raise SystemExit(1)
 
             cherrypy.tree.mount(apply(cls), mountpoint, meta_conf)
