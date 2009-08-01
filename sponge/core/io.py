@@ -43,8 +43,10 @@ class FileSystem(object):
 
     @classmethod
     def popd(cls):
-        cls.stack.pop()
-        os.chdir(cls.stack[-1])
+        if cls.stack:
+            cls.stack.pop()
+            if cls.stack:
+                os.chdir(cls.stack[-1])
 
     @classmethod
     def filename(cls, path, with_extension=True):
