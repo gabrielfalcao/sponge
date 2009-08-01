@@ -25,6 +25,31 @@ from math import ceil
 from sponge.core.io import FileSystem
 from sponge.image import jpeg, picture
 
+def route(name, route):
+    def dec(func):
+        conf = {
+            name: {
+                'route': route,
+                'method': func.__name__
+            }
+        }
+        return func, conf
+
+    return dec
+
+class MetaController(type):
+    def __init__(cls, name, bases, attrs):
+        for attr, value in attrs.items():
+            if isinstance(value, tuple) and len(value) is 2:
+                method, conf = value
+                setattr(cls,attr, method)
+                cls.__conf__['routes'].update(conf)
+        super(MetaController, cls).__init__(name, bases, attrs)
+
+class Controller(object):
+    __metaclass__ = MetaController
+    __conf__ = {'routes': {}}
+
 class InvalidCachePath(IOError):
     pass
 
@@ -204,3 +229,4 @@ class Page(object):
         if self.number == self.paginator.num_pages:
             return self.paginator.count
         return self.number * self.paginator.per_page
+

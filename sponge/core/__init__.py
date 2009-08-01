@@ -189,7 +189,6 @@ class SpongeConfig(object):
         for classname, mountpoint in classes.items():
             try:
                 cls = cloader.load(classname)
-
             except Exception, e:
                 sys.stderr.write('\nSponge could not find the class %s ' \
                                  'at %s, verify if your settings.yml ' \
@@ -198,5 +197,14 @@ class SpongeConfig(object):
                                                                   unicode(e)))
                 raise SystemExit(1)
 
-            cherrypy.tree.mount(apply(cls), mountpoint, meta_conf)
+            if hasattr(cls, '__conf__') and cls.__conf__.has_key('routes'):
+                routes = cls.__conf__['routes']
+                dispatcher = cherrypy.dispatch.RoutesDispatcher()
+                for k, v in routes.items():
+                    dispatcher.connect(name=k, route=v['route'], controller=cls())
 
+                conf = meta_conf.copy()
+                conf[mountpoint] = {'request.dispatch': dispatcher}
+                cherrypy.tree.mount(root=None, config=conf)
+            else:
+                cherrypy.tree.mount(cls(), mountpoint, meta_conf)
