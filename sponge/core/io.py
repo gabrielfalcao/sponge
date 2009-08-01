@@ -123,13 +123,11 @@ class FileSystem(object):
         cls.pushd(base_path)
         zfile = zipfile.ZipFile(filename)
 
-
-
         output("Extracting files to %s" % base_path)
         for file_name in zfile.namelist():
             try:
                 output("  -> Unpacking %s" % file_name)
-                f = open(file_name, 'w')
+                f = cls.open_raw(file_name, 'w')
                 f.write(zfile.read(file_name))
                 f.close()
             except IOError:

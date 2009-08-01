@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
+from StringIO import StringIO
 from mox import Mox
 from nose.tools import assert_equals
 from utils import assert_raises
@@ -147,3 +149,118 @@ def test_exists():
         mox.VerifyAll()
     finally:
         io.exists = old_exists
+
+def test_extract_zip_non_verbose():
+    mox = Mox()
+    class MyFs(io.FileSystem):
+        stack = []
+        abspath = mox.CreateMockAnything()
+        pushd = mox.CreateMockAnything()
+        popd = mox.CreateMockAnything()
+        open_raw = mox.CreateMockAnything()
+        mkdir = mox.CreateMockAnything()
+
+    mox.StubOutWithMock(io, 'zipfile')
+
+    filename = 'modafoca.zip'
+    base_path = '../to/project'
+    full_path = '/full/path/to/project'
+
+    MyFs.abspath(base_path).AndReturn(full_path)
+    MyFs.pushd(full_path)
+
+    zip_mock = mox.CreateMockAnything()
+
+    io.zipfile.ZipFile(filename).AndReturn(zip_mock)
+
+    file_list = [
+        'settings.yml',
+        'app',
+        'app/controllers.py'
+    ]
+    zip_mock.namelist().AndReturn(file_list)
+    zip_mock.read('settings.yml').AndReturn('settings.yml content')
+    zip_mock.read('app/controllers.py').AndReturn('controllers.py content')
+
+    file_mock1 = mox.CreateMockAnything()
+    MyFs.open_raw('settings.yml', 'w').AndReturn(file_mock1)
+    file_mock1.write('settings.yml content')
+    file_mock1.close()
+
+    MyFs.open_raw('app', 'w').AndRaise(IOError('it is a directory, dumb ass!'))
+    MyFs.mkdir('app')
+
+    file_mock2 = mox.CreateMockAnything()
+    MyFs.open_raw('app/controllers.py', 'w').AndReturn(file_mock2)
+    file_mock2.write('controllers.py content')
+    file_mock2.close()
+
+    MyFs.popd()
+
+    mox.ReplayAll()
+    try:
+        MyFs.extract_zip('modafoca.zip', base_path)
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_extract_zip_verbose():
+    mox = Mox()
+    sys.stdout = StringIO()
+    class MyFs(io.FileSystem):
+        stack = []
+        abspath = mox.CreateMockAnything()
+        pushd = mox.CreateMockAnything()
+        popd = mox.CreateMockAnything()
+        open_raw = mox.CreateMockAnything()
+        mkdir = mox.CreateMockAnything()
+
+    mox.StubOutWithMock(io, 'zipfile')
+
+    filename = 'modafoca.zip'
+    base_path = '../to/project'
+    full_path = '/full/path/to/project'
+
+    MyFs.abspath(base_path).AndReturn(full_path)
+    MyFs.pushd(full_path)
+
+    zip_mock = mox.CreateMockAnything()
+
+    io.zipfile.ZipFile(filename).AndReturn(zip_mock)
+
+    file_list = [
+        'settings.yml',
+        'app',
+        'app/controllers.py'
+    ]
+    zip_mock.namelist().AndReturn(file_list)
+    zip_mock.read('settings.yml').AndReturn('settings.yml content')
+    zip_mock.read('app/controllers.py').AndReturn('controllers.py content')
+
+    file_mock1 = mox.CreateMockAnything()
+    MyFs.open_raw('settings.yml', 'w').AndReturn(file_mock1)
+    file_mock1.write('settings.yml content')
+    file_mock1.close()
+
+    MyFs.open_raw('app', 'w').AndRaise(IOError('it is a directory, dumb ass!'))
+    MyFs.mkdir('app')
+
+    file_mock2 = mox.CreateMockAnything()
+    MyFs.open_raw('app/controllers.py', 'w').AndReturn(file_mock2)
+    file_mock2.write('controllers.py content')
+    file_mock2.close()
+
+    MyFs.popd()
+
+    mox.ReplayAll()
+    try:
+        MyFs.extract_zip('modafoca.zip', base_path, verbose=True)
+        assert_equals(sys.stdout.getvalue(),
+                      'Extracting files to /full/path/to/project\n  ' \
+                      '-> Unpacking settings.yml\n  -> Unpacking app' \
+                      '\n---> Creating directory app\n  -> Unpacking' \
+                      ' app/controllers.py\n')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+        sys.stdout = sys.__stdout__
