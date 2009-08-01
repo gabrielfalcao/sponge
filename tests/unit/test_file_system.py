@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import sys
 from StringIO import StringIO
 from mox import Mox
@@ -264,3 +263,53 @@ def test_extract_zip_verbose():
     finally:
         mox.UnsetStubs()
         sys.stdout = sys.__stdout__
+
+def test_locate_non_recursive():
+    mox = Mox()
+
+    old_glob = io.glob
+    io.glob = mox.CreateMockAnything()
+
+    base_path = '../to/project'
+    full_path = '/full/path/to/project'
+
+    class MyFs(io.FileSystem):
+        stack = []
+        abspath = mox.CreateMockAnything()
+
+    io.glob('%s/*match*.py' % full_path)
+    MyFs.abspath(base_path).AndReturn(full_path)
+    mox.ReplayAll()
+    try:
+        MyFs.locate(base_path, '*match*.py', recursive=False)
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+        io.glob = old_glob
+
+def test_locate_recursive():
+    mox = Mox()
+
+    base_path = '../to/project'
+    full_path = '/full/path/to/project'
+
+    class MyFs(io.FileSystem):
+        stack = []
+        abspath = mox.CreateMockAnything()
+        walk = mox.CreateMockAnything()
+
+    io.glob('%s/*match*.py' % full_path)
+    MyFs.abspath(base_path).AndReturn(full_path)
+
+    walk_list = [
+        (None, None, ['file1.py', 'file2.jpg']),
+        (None, None, ['path1/file3.png', 'path1/file4.html'])
+    ]
+    MyFs.walk(full_path).AndReturn(walk_list)
+
+    mox.ReplayAll()
+    try:
+        MyFs.locate(base_path, '*match*.py', recursive=True)
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()

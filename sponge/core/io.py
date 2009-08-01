@@ -103,17 +103,21 @@ class FileSystem(object):
         return dirname(path)
 
     @classmethod
+    def walk(cls, path):
+        '''Walks through filesystem'''
+        return os.walk(path)
+
+    @classmethod
     def locate(cls, path, match, recursive=True):
         root_path = cls.abspath(path)
-
         if recursive:
             return_files = []
-            for path, dirs, files in os.walk(root_path):
+            for path, dirs, files in cls.walk(root_path):
                 for filename in fnmatch.filter(files, match):
                     return_files.append(cls.join(path, filename))
             return return_files
         else:
-            return glob(join(root_path, match))
+            return glob(cls.join(root_path, match))
 
     @classmethod
     def extract_zip(cls, filename, base_path='.', verbose=False):
