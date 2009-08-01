@@ -304,3 +304,20 @@ def test_create_success():
     mox.ReplayAll()
     b.create('my-project')
     mox.VerifyAll()
+
+def test_start():
+    mox = Mox()
+    b = bob.Bob()
+    b.fs = mox.CreateMockAnything()
+    b.create = mox.CreateMockAnything()
+    b.go = mox.CreateMockAnything()
+
+    b.create('foo-bar')
+    b.fs.pushd('foo-bar')
+    b.go()
+
+    mox.ReplayAll()
+
+    b.start('foo-bar')
+
+    mox.VerifyAll()

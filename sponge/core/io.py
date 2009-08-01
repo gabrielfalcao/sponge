@@ -146,6 +146,14 @@ class FileSystem(object):
 
         return codecs.open(path, mode, 'utf-8')
 
+    @classmethod
+    def open_raw(cls, name, mode):
+        path = name
+        if not os.path.isabs(path):
+            path = cls.current_dir(name)
+
+        return open(path, mode, 'utf-8')
+
 class ClassLoader(object):
     def __init__(self, path):
         if not isinstance(path, basestring):

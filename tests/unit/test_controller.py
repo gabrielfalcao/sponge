@@ -116,6 +116,117 @@ class TestImageHandler:
         msg = 'Expected "%s", got %r' % (ret, got)
         assert got == ret, msg
 
+    def test_creation_takes_optional_cache_path_string(self):
+        assert_raises(TypeError, controller.ImageHandler, 5,
+                      exc_pattern=r'The path given to ImageHandler ' \
+                      'to cache must be a string, got 5')
+
+    def test_caching_fails_if_cache_path_does_not_exist(self):
+        mox = Mox()
+
+        class ImageHandlerStub(controller.ImageHandler):
+            fs = mox.CreateMockAnything()
+
+        ImageHandlerStub.fs.exists('/full/path/to/cache').AndReturn(False)
+
+        mox.ReplayAll()
+        assert_raises(controller.InvalidCachePath,
+                      ImageHandlerStub,
+                      '/full/path/to/cache',
+                      exc_pattern=r'The given path \(/full/path/to/cache\) ' \
+                      'does not exist, so that ImageHandler can not save ' \
+                      'cache files there.')
+        mox.VerifyAll()
+
+    def test_caching_return_if_already_exists(self):
+        mox = Mox()
+
+        old_jpeg = controller.jpeg
+        old_picture = controller.picture
+        old_serve_file = controller.serve_file
+
+        controller.jpeg = mox.CreateMockAnything()
+        controller.picture = mox.CreateMockAnything()
+        controller.serve_file = mox.CreateMockAnything()
+
+        cache_at = '/full/path/to/cache'
+        class ImageHandlerStub(controller.ImageHandler):
+            fs = mox.CreateMockAnything()
+
+        ImageHandlerStub.fs.exists(cache_at).AndReturn(True)
+
+        controller.jpeg(path='imgs/image.jpg')
+        ImageHandlerStub.fs.join(cache_at, 'imgs/image.jpg'). \
+                         AndReturn('/should/be/cache/full/path.jpg')
+
+        ImageHandlerStub.fs.exists('/should/be/cache/full/path.jpg'). \
+                         AndReturn(True)
+        controller.serve_file('/should/be/cache/full/path.jpg',
+                              'image/jpeg'). \
+                   AndReturn('should-be-image-data')
+
+        mox.ReplayAll()
+        try:
+            img = ImageHandlerStub(cache_at)
+            assert img.should_cache
+            assert_equal(img.cache_path, cache_at)
+            got = img('imgs', 'image.jpg')
+            assert_equal(got, 'should-be-image-data')
+            mox.VerifyAll()
+        finally:
+            controller.jpeg = old_jpeg
+            controller.picture = old_picture
+            controller.serve_file = old_serve_file
+
+    def test_caching_return_if_already_exists(self):
+        mox = Mox()
+
+        old_jpeg = controller.jpeg
+        old_picture = controller.picture
+        old_serve_file = controller.serve_file
+
+        controller.jpeg = mox.CreateMockAnything()
+        controller.picture = mox.CreateMockAnything()
+        controller.serve_file = mox.CreateMockAnything()
+
+        cache_at = '/full/path/to/cache'
+        class ImageHandlerStub(controller.ImageHandler):
+            fs = mox.CreateMockAnything()
+
+        ImageHandlerStub.fs.exists(cache_at).AndReturn(True)
+
+        controller.jpeg(path='imgs/image.jpg').AndReturn('fake-img')
+        ImageHandlerStub.fs.join(cache_at, 'imgs/image.jpg'). \
+                         AndReturn('/should/be/cache/full/path.jpg')
+
+        ImageHandlerStub.fs.exists('/should/be/cache/full/path.jpg'). \
+                         AndReturn(False)
+
+        ImageHandlerStub.fs.dirname('/should/be/cache/full/path.jpg'). \
+                         AndReturn('dir-name')
+
+        ImageHandlerStub.fs.mkdir('dir-name')
+
+        file_mock = mox.CreateMockAnything()
+        ImageHandlerStub.fs.open_raw('/should/be/cache/full/path.jpg', 'w'). \
+                         AndReturn(file_mock)
+
+        file_mock.write('fake-img')
+        file_mock.close()
+
+        mox.ReplayAll()
+        try:
+            img = ImageHandlerStub(cache_at)
+            assert img.should_cache
+            assert_equal(img.cache_path, cache_at)
+            got = img('imgs', 'image.jpg')
+            assert_equal(got, 'fake-img')
+            mox.VerifyAll()
+        finally:
+            controller.jpeg = old_jpeg
+            controller.picture = old_picture
+            controller.serve_file = old_serve_file
+
 class TestPaginator:
     def check_paginator(self, params, output):
         """
@@ -387,3 +498,4 @@ class TestPaginator:
         assert_raises(controller.EmptyPage,
                       p.validate_number,
                       1)
+
