@@ -190,18 +190,18 @@ class SpongeConfig(object):
             try:
                 cls = cloader.load(classname)
             except Exception, e:
+                format_str = classname, application_path, unicode(e)
                 sys.stderr.write('\nSponge could not find the class %s ' \
                                  'at %s, verify if your settings.yml ' \
-                                 'is configured as well\n%s\n' % (classname,
-                                                                  application_path,
-                                                                  unicode(e)))
+                                 'is configured as well\n%s\n' % (format_str))
+
                 raise SystemExit(1)
 
             if hasattr(cls, '__conf__') and cls.__conf__.has_key('routes'):
                 routes = cls.__conf__['routes']
                 dispatcher = cherrypy.dispatch.RoutesDispatcher()
                 for k, v in routes.items():
-                    dispatcher.connect(name=k, route=v['route'], controller=cls())
+                    dispatcher.connect(name=k, route=v['route'], controller=cls(), action=v['method'])
 
                 conf = meta_conf.copy()
                 conf[mountpoint] = {'request.dispatch': dispatcher}

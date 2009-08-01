@@ -229,4 +229,3 @@ class Page(object):
         if self.number == self.paginator.num_pages:
             return self.paginator.count
         return self.number * self.paginator.per_page
-
