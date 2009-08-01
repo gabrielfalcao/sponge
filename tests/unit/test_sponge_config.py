@@ -78,6 +78,7 @@ def test_can_setup_all():
     core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
 
     class_mock = mox.CreateMockAnything()
+    class_mock.__conf__ = {}
     cloader_mock.load('SomeController').AndReturn(class_mock)
     class_mock().AndReturn('should_be_some_controller_instance')
 
