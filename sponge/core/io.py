@@ -156,7 +156,7 @@ class FileSystem(object):
         if not os.path.isabs(path):
             path = cls.current_dir(name)
 
-        return open(path, mode, 'utf-8')
+        return open(path, mode)
 
 class ClassLoader(object):
     def __init__(self, path):
