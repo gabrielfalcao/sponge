@@ -173,10 +173,11 @@ class ClassLoader(object):
         sys.path.append(dir_name)
         try:
             self.module = __import__(module_name)
-        except ImportError:
+        except ImportError, e:
             raise ImportError, \
-                  'There is no module %s at %s' % (module_name,
-                                                   dir_name)
+                  'There is no module %s at %s. \nThe reason is: %s' % (module_name,
+                                                                        dir_name,
+                                                                        unicode(e))
 
         sys.path.pop()
 
