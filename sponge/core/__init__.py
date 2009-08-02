@@ -172,9 +172,7 @@ class SpongeConfig(object):
         adir = application['path']
         application_path = self.fs.join(current_full_path, adir)
 
-
         cloader = ClassLoader(application_path)
-
 
         meta_conf = {}
         static = application.get('static') or {}

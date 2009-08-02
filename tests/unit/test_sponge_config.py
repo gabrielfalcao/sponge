@@ -65,7 +65,7 @@ def test_setup_all_path_must_be_absolute():
                   exc_pattern=r'SpongeConfig.setup_all takes a ' \
                   'absolute path, got relative/path/.')
 
-def test_can_setup_all():
+def test_can_setup_all_without_routes():
     mox = Mox()
     d = {}
     class_loader = core.ClassLoader
@@ -129,6 +129,69 @@ def test_setup_all_fails_on_import():
         assert_equals(got, '\nSponge could not find the class %s ' \
                      'at %s, verify if your settings.yml ' \
                      'is configured as well\n%s\n' % format_args)
+        mox.VerifyAll()
+    finally:
+        core.ClassLoader = class_loader
+        core.cherrypy = cherrypy
+
+def test_can_setup_all_with_routes():
+    mox = Mox()
+    d = {}
+    class_loader = core.ClassLoader
+    cherrypy = core.cherrypy
+    core.ClassLoader = mox.CreateMockAnything()
+    core.cherrypy = mox.CreateMockAnything()
+    core.cherrypy.tree = mox.CreateMockAnything()
+    core.cherrypy.dispatch = mox.CreateMockAnything()
+
+    cloader_mock = mox.CreateMockAnything()
+    core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
+
+    class_mock = mox.CreateMockAnything()
+    class_mock.__conf__ = {
+        'routes': {
+            'show_photos': {
+                'route': '/photos',
+                'method': 'list_photos'
+            },
+            'edit_photo': {
+                'route': '/photo/:id/edit',
+                'method': 'edit'
+            }
+        }
+    }
+    controller_mock = mox.CreateMockAnything()
+    cloader_mock.load('SomeController').AndReturn(class_mock)
+    class_mock().AndReturn(controller_mock)
+    class_mock().AndReturn(controller_mock)
+
+    routes_mock = mox.CreateMockAnything()
+    core.cherrypy.dispatch.RoutesDispatcher().AndReturn(routes_mock)
+
+    routes_mock.connect(name='show_photos',
+                        controller=controller_mock,
+                        route='/photos',
+                        action='list_photos')
+    routes_mock.connect(name='edit_photo',
+                        controller=controller_mock,
+                        route='/photo/:id/edit',
+                        action='edit')
+
+    core.cherrypy.tree.mount(root=None, config={
+        '/': {
+            'request.dispatch': routes_mock
+        },
+        '/media': {
+            'tools.staticdir.dir': '/absolute/path/my/media',
+            'tools.staticdir.on': True
+        }
+    })
+
+    cf = core.ConfigValidator(config_dict)
+    sp = core.SpongeConfig(d, cf)
+    mox.ReplayAll()
+    try:
+        sp.setup_all('/absolute/path/')
         mox.VerifyAll()
     finally:
         core.ClassLoader = class_loader
