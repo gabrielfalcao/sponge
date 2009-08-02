@@ -25,7 +25,6 @@ import yaml
 import codecs
 import cherrypy
 import optparse
-import nose
 
 from sponge import __version__ as version
 from sponge.core import ConfigValidator, SpongeConfig
