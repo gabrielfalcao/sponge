@@ -18,3 +18,7 @@
 # Boston, MA 02111-1307, USA.
 
 __version__ = '0.2.0'
+
+from sponge.controller import Controller, route
+from sponge.template import render_html
+
