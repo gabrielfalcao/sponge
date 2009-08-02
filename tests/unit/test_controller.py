@@ -24,6 +24,33 @@ from nose.tools import assert_equal
 from utils import assert_raises
 from sponge import controller
 
+def test_route_return_tuple():
+    @controller.route('route_name', 'route/:foo/other/:bar')
+    def my_func():
+        return 'it is my func'
+
+    assert isinstance(my_func, tuple), 'A function decorated with ' \
+           'route should be a tuple'
+    assert len(my_func) == 2, 'the tuple should have two items'
+    assert callable(my_func[0]), 'first item of tuple should be the actual callable'
+    assert isinstance(my_func[1], dict), '2nd item of tuple should be a dict'
+
+def test_controller_with_routes():
+    class MyController(controller.Controller):
+        @controller.route('my_route_name', '/path/:to/:route/:param3')
+        def some_method(self, to, route, param3):
+            return 'something'
+
+    assert hasattr(MyController, '__conf__'), 'MyController should have __conf__'
+    assert_equal(MyController.__conf__, {
+        'routes': {
+            'my_route_name': {
+                'route': '/path/:to/:route/:param3',
+                'method': 'some_method'
+            }
+        }
+    })
+
 class TestImageHandler:
     def __init__(self):
         self.handler = controller.ImageHandler()
