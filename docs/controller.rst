@@ -34,6 +34,28 @@ Then
  * /images/crop/200x200/dog.jpg - would serve the file ``"/home/user/images/dog.jpg"`` cropped and resized to 200 x 200 pixels.
  * /images/crop/90x80/another/path/image.jpg - would serve the file ``"/home/user/images/another/path/image.jpg"`` cropped and resized to 90 x 80 pixels.
 
+Caching
+^^^^^^^
+
+ImageHandler support caching of generated images, all you need is to
+set the cache path on its instantiation, and the path must exist.
+
+Example::
+
+   >>> import cherrypy
+   >>> from sponge.controller import ImageHandler
+   >>>
+   >>> class MyController:
+   ...      exposed = True
+   ...      images = ImageHandler(cache_at='/srv/images/content')
+   ...      def index(self):
+   ...          return 'try out going to /images/crop/200x200/logo.jpg'
+
+Sponge's ImageHandler will lookup in the given directory if the image
+exists, then it serves statically directly from disk.  If the file is
+not cached, ImageHandler will generate the image, save on disk and
+serve.
+
 Paginator
 ---------
 

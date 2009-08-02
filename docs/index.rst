@@ -4,20 +4,26 @@
    Sponge template helpers <templat>
    Sponge image helpers <image>
    Sponge controller helpers <controller>
+   Sponge tutorial <tutorial>
 
 ====================
 Sponge Documentation
 ====================
 
-Since Sponge is built on top of `CherryPy <http://www.cherrypy.org/>`_, its features are just little
-helpers.
-
-For now, Sponge gives you a controller to serve dinamic-sized images
-and some view helpers.
+Sponge offers you a very simple structure to build your web apps on
+top of `CherryPy <http://www.cherrypy.org/>`_.
+For instance:
+ * A command line helper: bob, that creates and run your project.
+ * Very simple config file.
+ * First project always comes with unit and functional tests examples.
+ * Really simple routing mechanism.
+ * Ready-to-use Image handler controller.
+ * Focused in testablility and simplicity.
 
 Reference
 ---------
 
+* :ref:`Tutorial <tutorial>`
 * :ref:`Basic Sponge setup <configuration>`
 * :ref:`Controllers <controller>`
 * :ref:`Templates <template>`
