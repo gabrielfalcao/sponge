@@ -19,10 +19,9 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-import os
+import re
 import sys
 import yaml
-import codecs
 import cherrypy
 import optparse
 
@@ -38,7 +37,8 @@ basic_config = {
     'autoreload': True,
     'application': {
         'classes': {
-            'HelloWorldController': '/'
+            'HelloWorldController': '/',
+            'AjaxController': '/ajax',
         },
         'image-dir': None,
         'path': None,
@@ -135,11 +135,22 @@ class Bob(object):
         template_path = self.fs.join(path, 'templates')
         cdict['application']['template-dir'] = template_path
 
-        cfg.write(yaml.dump(cdict))
+        yml_data = self.fix_yml(yaml.dump(cdict, indent=True))
+        cfg.write(yml_data)
         cfg.close()
 
         zip_file = SpongeData.get_file('project.zip')
         self.fs.extract_zip(zip_file, path)
+
+    def fix_yml(self, yml):
+        yml = re.sub('[ ]+{', '{', yml)
+        pattern1 = r'(?P<spc>[ ]+)(?P<pre>[^{]+)[{](?P<cnt>[^}]+)[}]'
+        replacement1 = r'\g<spc>\g<pre>\n  \g<spc>\g<cnt>'
+        yml = re.sub(pattern1, replacement1, yml)
+        pattern2 = r'(?P<spc>[ ]+)(?P<pre>[^,]+)[,][ ]*'
+        replacement2 = r'\g<spc>\g<pre>\n  \g<spc>'
+        yml = re.sub(pattern2, replacement2, yml)
+        return yml
 
     def start(self, project_name=None):
         self.create(project_name)

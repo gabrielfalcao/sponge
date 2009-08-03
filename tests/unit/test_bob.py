@@ -39,7 +39,8 @@ basic_config = {
     'autoreload': True,
     'application': {
         'classes': {
-            'HelloWorldController': '/'
+            'HelloWorldController': '/',
+            'AjaxController': '/ajax',
         },
         'image-dir': None,
         'path': None,
@@ -292,7 +293,7 @@ def test_create_success():
         'template-dir': join(full_path, 'templates'),
     })
 
-    bob.yaml.dump(expected_dict).AndReturn('should-be-a-yaml')
+    bob.yaml.dump(expected_dict, indent=True).AndReturn('should-be-a-yaml')
     file_mock.write('should-be-a-yaml')
     file_mock.close()
 
@@ -321,3 +322,21 @@ def test_start():
     b.start('foo-bar')
 
     mox.VerifyAll()
+
+def test_fix_yml():
+    expected = """
+test:
+  with:
+    Items: here
+    And: Here
+"""
+    wrong = """
+test:
+  with: {Items: here, And: Here}
+"""
+
+    b = bob.Bob()
+
+    got = b.fix_yml(wrong)
+
+    assert_equals(got, expected)
