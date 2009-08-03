@@ -184,6 +184,8 @@ class SpongeConfig(object):
             }
 
         classes = application.get('classes') or {}
+        conf = meta_conf.copy()
+        routed = False
         for classname, mountpoint in classes.items():
             try:
                 cls = cloader.load(classname)
@@ -195,14 +197,27 @@ class SpongeConfig(object):
 
                 raise SystemExit(1)
 
-            if hasattr(cls, '__conf__') and cls.__conf__.has_key('routes'):
-                routes = cls.__conf__['routes']
-                dispatcher = cherrypy.dispatch.RoutesDispatcher()
-                for k, v in routes.items():
-                    dispatcher.connect(name=k, route=v['route'], controller=cls(), action=v['method'])
+            if not hasattr(cls, '__routes__'):
+                sys.stderr.write('\nWARNING: The class %s has no routes\n' % repr(cls))
+                cherrypy.tree.mount(root=cls(), config=conf)
+                continue
 
-                conf = meta_conf.copy()
-                conf[mountpoint] = {'request.dispatch': dispatcher}
-                cherrypy.tree.mount(root=None, config=conf)
-            else:
-                cherrypy.tree.mount(cls(), mountpoint, meta_conf)
+            if not isinstance(cls.__routes__, dict):
+                cherrypy.tree.mount(root=cls(), config=conf)
+                continue
+
+            routed = True
+            dispatcher = cherrypy.dispatch.RoutesDispatcher()
+            for k, v in cls.__routes__.items():
+                part1 = mountpoint.rstrip('/')
+                part2 = v['route'].lstrip('/')
+                new_route = "/".join([part1, part2])
+
+                dispatcher.connect(name=k,
+                                   route=new_route,
+                                   controller=cls(),
+                                   action=v['method'])
+
+            conf[mountpoint] = {'request.dispatch': dispatcher}
+
+        cherrypy.tree.mount(root=None, config=conf)

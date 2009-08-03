@@ -39,16 +39,19 @@ def route(name, route):
 
 class MetaController(type):
     def __init__(cls, name, bases, attrs):
-        for attr, value in attrs.items():
-            if isinstance(value, tuple) and len(value) is 2:
-                method, conf = value
-                setattr(cls,attr, method)
-                cls.__conf__['routes'].update(conf)
+        if name not in ('MetaController', 'Controller'):
+            cls.__routes__ = {}
+            for attr, value in attrs.items():
+                if isinstance(value, tuple) and len(value) is 2:
+                    method, conf = value
+                    setattr(cls, attr, method)
+                    cls.__routes__.update(conf)
+
         super(MetaController, cls).__init__(name, bases, attrs)
 
 class Controller(object):
     __metaclass__ = MetaController
-    __conf__ = {'routes': {}}
+    __routes__ = None
 
 class InvalidCachePath(IOError):
     pass
@@ -139,10 +142,9 @@ class Paginator(object):
         if number < 1:
             raise EmptyPage('That page number is less than 1')
 
-        if self.per_page == 1001:
-            import pdb;pdb.set_trace()
         if number > self.num_pages:
             raise EmptyPage('That page contains no results')
+
         return number
 
     def page(self, number):
