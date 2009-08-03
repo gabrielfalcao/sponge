@@ -51,3 +51,26 @@ At this point, if you just access at browser:
    http://127.0.0.1:8080/awesome/routes/say/John/name
    will give you the response:
    "Hello John!"
+
+3. Running tests
+~~~~~~~~~~~~~~~~
+
+You need to have nose and mox installed in your system to run Sponge tests.
+
+We have chosen nosetests as tool to run tests, because its much clean
+and simple to use it, and its library is even more pythonic than
+pyunit.
+
+Right after creating your project through the command::
+
+      bob create myproj
+
+Go into project directory::
+
+   cd myproj
+
+And finally run::
+
+   nosetests -s
+
+That is all folks!
