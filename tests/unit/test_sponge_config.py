@@ -65,7 +65,46 @@ def test_setup_all_path_must_be_absolute():
                   exc_pattern=r'SpongeConfig.setup_all takes a ' \
                   'absolute path, got relative/path/.')
 
-def test_can_setup_all_without_routes():
+def test_can_setup_all_without_routes_attr():
+    mox = Mox()
+    d = {}
+    class_loader = core.ClassLoader
+    cherrypy = core.cherrypy
+    core.ClassLoader = mox.CreateMockAnything()
+    core.cherrypy = mox.CreateMockAnything()
+    core.cherrypy.tree = mox.CreateMockAnything()
+
+    cloader_mock = mox.CreateMockAnything()
+    core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
+
+    class_mock = lambda: 'should_be_some_controller_instance'
+    class_mock.__repr__ = lambda: 'class_mock_lambda'
+
+    cloader_mock.load('SomeController').AndReturn(class_mock)
+
+    core.cherrypy.tree.mount(root='should_be_some_controller_instance',
+                             script_name='/', config={
+                                 '/media': {
+                                     'tools.staticdir.dir': '/absolute/path/my/media',
+                                     'tools.staticdir.on': True
+                                 }
+                             })
+
+    cf = core.ConfigValidator(config_dict)
+    sp = core.SpongeConfig(d, cf)
+    mox.ReplayAll()
+    sys.stderr = StringIO()
+    try:
+        sp.setup_all('/absolute/path/')
+        assert_equals(sys.stderr.getvalue(),
+                      '\nWARNING: The class %s has no routes\n' % repr(class_mock))
+        mox.VerifyAll()
+    finally:
+        core.ClassLoader = class_loader
+        core.cherrypy = cherrypy
+        sys.stderr = sys.__stderr__
+
+def test_can_setup_all_without_routes_dict():
     mox = Mox()
     d = {}
     class_loader = core.ClassLoader
@@ -78,26 +117,31 @@ def test_can_setup_all_without_routes():
     core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
 
     class_mock = mox.CreateMockAnything()
-    class_mock.__conf__ = {}
+    class_mock.__routes__ = 'blabla'
+
     cloader_mock.load('SomeController').AndReturn(class_mock)
     class_mock().AndReturn('should_be_some_controller_instance')
 
-    core.cherrypy.tree.mount('should_be_some_controller_instance', '/', {
-        '/media': {
-            'tools.staticdir.dir': '/absolute/path/my/media',
-            'tools.staticdir.on': True
-        }
-    })
+    core.cherrypy.tree.mount(root='should_be_some_controller_instance',
+                             script_name='/', config={
+                                 '/media': {
+                                     'tools.staticdir.dir': '/absolute/path/my/media',
+                                     'tools.staticdir.on': True
+                                 }
+                             })
 
     cf = core.ConfigValidator(config_dict)
     sp = core.SpongeConfig(d, cf)
     mox.ReplayAll()
+    sys.stderr = StringIO()
     try:
         sp.setup_all('/absolute/path/')
+        assert_equals(sys.stderr.getvalue(), '')
         mox.VerifyAll()
     finally:
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
+        sys.stderr = sys.__stderr__
 
 def test_setup_all_fails_on_import():
     mox = Mox()
@@ -148,16 +192,14 @@ def test_can_setup_all_with_routes():
     core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
 
     class_mock = mox.CreateMockAnything()
-    class_mock.__conf__ = {
-        'routes': {
-            'show_photos': {
-                'route': '/photos',
-                'method': 'list_photos'
-            },
-            'edit_photo': {
-                'route': '/photo/:id/edit',
-                'method': 'edit'
-            }
+    class_mock.__routes__ = {
+        'show_photos': {
+            'route': '/photos',
+            'method': 'list_photos',
+        },
+        'edit_photo': {
+            'route': '/photo/:id/edit',
+            'method': 'edit',
         }
     }
     controller_mock = mox.CreateMockAnything()

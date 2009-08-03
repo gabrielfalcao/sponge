@@ -41,13 +41,11 @@ def test_controller_with_routes():
         def some_method(self, to, route, param3):
             return 'something'
 
-    assert hasattr(MyController, '__conf__'), 'MyController should have __conf__'
-    assert_equal(MyController.__conf__, {
-        'routes': {
-            'my_route_name': {
-                'route': '/path/:to/:route/:param3',
-                'method': 'some_method'
-            }
+    assert hasattr(MyController, '__routes__'), 'MyController should have __routes__'
+    assert_equal(MyController.__routes__, {
+        'my_route_name': {
+            'route': '/path/:to/:route/:param3',
+            'method': 'some_method'
         }
     })
 

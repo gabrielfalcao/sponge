@@ -197,13 +197,17 @@ class SpongeConfig(object):
 
                 raise SystemExit(1)
 
+            fallback = lambda: cherrypy.tree.mount(root=cls(),
+                                                   config=conf,
+                                                   script_name=mountpoint)
+            msg = '\nWARNING: The class %s has no routes\n' % repr(cls)
             if not hasattr(cls, '__routes__'):
-                sys.stderr.write('\nWARNING: The class %s has no routes\n' % repr(cls))
-                cherrypy.tree.mount(root=cls(), config=conf)
+                sys.stderr.write(msg)
+                fallback()
                 continue
 
             if not isinstance(cls.__routes__, dict):
-                cherrypy.tree.mount(root=cls(), config=conf)
+                fallback()
                 continue
 
             routed = True
@@ -220,4 +224,5 @@ class SpongeConfig(object):
 
             conf[mountpoint] = {'request.dispatch': dispatcher}
 
-        cherrypy.tree.mount(root=None, config=conf)
+        if routed:
+            cherrypy.tree.mount(root=None, config=conf)
