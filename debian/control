@@ -3,7 +3,7 @@ Section: python
 Priority: optional
 Maintainer: Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>
 Standards-Version: 3.8.2
-Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-nose, python-pmock, python-genshi, python-cherrypy3
+Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-nose, python-mox, python-genshi, python-cherrypy3
 Build-Depends-Indep: python-sphinx
 Homepage: http://www.sponge.org/
 Vcs-Git: git://github.com/gabrielfalcao/sponge.git
@@ -11,7 +11,7 @@ Vcs-Browser: http://github.com/gabrielfalcao/sponge/tree/master
 
 Package: python-sponge
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-cherrypy3, python-genshi
+Depends: ${misc:Depends}, ${python:Depends}, python-cherrypy3, python-genshi, python-imaging, python-yaml, python-nose
 Recommends:
 Suggests:
 Description: Sponge is a web framework built on top of CherryPy and Genshi

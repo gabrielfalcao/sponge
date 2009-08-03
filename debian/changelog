@@ -1,3 +1,11 @@
+python-sponge (0.2.0) experimental; urgency=low
+
+  * New release.
+  * Removed python-pmock from dependencies.
+  * Added python-mox, python-nose, python-imaging and python-yaml to dependencies.
+
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Mon, 03 Aug 2009 02:59:00 -0300
+
 python-sponge (0.1.3) experimental; urgency=low
 
   * New release, minor bug fix.
