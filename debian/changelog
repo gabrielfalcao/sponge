@@ -1,3 +1,10 @@
+python-sponge (0.2.1) experimental; urgency=low
+
+  * New release
+  * Fixed the control file.
+
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Mon, 03 Aug 2009 03:18:22 -0300
+
 python-sponge (0.2.0) experimental; urgency=low
 
   * New release.
