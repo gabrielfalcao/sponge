@@ -120,7 +120,8 @@ def test_can_setup_all_without_routes_dict():
     class_mock.__routes__ = 'blabla'
 
     cloader_mock.load('SomeController').AndReturn(class_mock)
-    class_mock().AndReturn('should_be_some_controller_instance')
+    class_mock.__repr__().AndReturn('should_be_some_controller_instance')
+    class_mock.__call__().AndReturn('should_be_some_controller_instance')
 
     core.cherrypy.tree.mount(root='should_be_some_controller_instance',
                              script_name='/', config={
@@ -192,6 +193,7 @@ def test_can_setup_all_with_routes():
     core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
 
     class_mock = mox.CreateMockAnything()
+    class_mock.__repr__ = lambda: 'class_mock_lambda'
     class_mock.__routes__ = {
         'show_photos': {
             'route': '/photos',
