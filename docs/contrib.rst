@@ -19,7 +19,7 @@ It is made through the :ref:`view' ``picture``.
 Example::
 
    >>> import cherrypy
-   >>> from sponge.controller import ImageHandler
+   >>> from sponge.contrib.controllers import ImageHandler
    >>>
    >>> class MyController:
    ...      exposed = True
@@ -49,7 +49,7 @@ set the cache path on its instantiation, and the path must exist.
 Example::
 
    >>> import cherrypy
-   >>> from sponge.controller import ImageHandler
+   >>> from sponge.contrib.controllers import ImageHandler
    >>>
    >>> class MyController:
    ...      exposed = True

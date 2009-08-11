@@ -25,7 +25,7 @@ from mox import Mox
 from utils import assert_raises
 from os.path import join
 
-from sponge import image
+from sponge.helpers import image
 
 def test_image_has_function_jpeg():
     assert hasattr(image, 'jpeg'), 'sponge.image should have the function jpeg'

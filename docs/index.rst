@@ -1,8 +1,8 @@
 .. toctree::
    :maxdepth: 2
    Sponge basic setup <configuration>
-   Sponge template helpers <templat>
-   Sponge image helpers <image>
+   Sponge template helpers <template>
+   Sponge helpers <helpers>
    Sponge contrib <contrib>
    Sponge tutorial <tutorial>
 
@@ -25,6 +25,6 @@ Reference
 
 * :ref:`Tutorial <tutorial>`
 * :ref:`Basic Sponge setup <configuration>`
-* :ref:`Controllers <controller>`
 * :ref:`Templates <template>`
-* :ref:`Handling Images <image>`
+* :ref:`Helpers (imaging, pagination etc) <helpers>`
+* :ref:`Contrib <contrib>`

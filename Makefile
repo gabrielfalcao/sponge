@@ -3,11 +3,13 @@ all: clean test
 clean:
 	@echo "Cleaning up all *.pyc files ..."
 	@find . -name '*.pyc' -delete
+	@echo "Cleaning up coverage metadata ..."
+	@rm -f .coverage
 	@echo "Cleaning up build files ..."
 	@rm -rf build
 test:
 	@echo "Running all tests ..."
-	@nosetests -s --with-coverage --cover-package=sponge tests/{functional,unit}
+	@nosetests -s --with-coverage --cover-package=sponge tests/unit tests/functional
 	@echo "Done."
 
 unit:

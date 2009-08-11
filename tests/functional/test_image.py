@@ -19,7 +19,7 @@
 # Boston, MA 02111-1307, USA.
 import os
 import cherrypy
-from sponge import image
+from sponge.helpers import image
 
 images = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 

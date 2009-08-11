@@ -20,10 +20,11 @@
 import re
 import Image
 import cherrypy
+
 from cherrypy.lib.static import serve_file
-from math import ceil
+
 from sponge.core.io import FileSystem
-from sponge.image import jpeg, picture
+from sponge.helpers.image import jpeg, picture
 
 class InvalidCachePath(IOError):
     pass
