@@ -18,14 +18,11 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 import cherrypy
+
 from mox import Mox
 from nose.tools import assert_equal
-
 from utils import assert_raises
 from sponge import controller
-import sponge.plugins.image
-from sponge.plugins.image import *
-from sponge.plugins.paginator import *
 
 def test_route_return_tuple():
     @controller.route('route_name', 'route/:foo/other/:bar')
@@ -52,217 +49,14 @@ def test_controller_with_routes():
         }
     })
 
-class TestImageHandler:
-    def __init__(self):
-        self.handler = ImageHandler()
-
-    def test_is_exposed(self):
-        message = 'The ImageHandler should be exposed, ' \
-                  'so that CherryPy can see it'
-        assert self.handler.exposed is True, message
-
-    def test_return_not_found_with_no_args(self):
-        got = self.handler()
-        msg1 = 'the response should be "not found", got %s' % repr(got)
-        msg2 = 'The response status code should be 404, got %r' % \
-               cherrypy.response.status
-        assert got == 'not found', msg1
-        assert cherrypy.response.status == 404, msg2
-
-    def test_calls_jpeg_when_args_length_less_than_3(self):
-        mox = Mox()
-
-        mox.StubOutWithMock(sponge.plugins.image, 'jpeg')
-        ret = 'should_be_a_pil_img'
-        sponge.plugins.image.jpeg(path='arg1/arg2').AndReturn(ret)
-
-        mox.ReplayAll()
-        got = self.handler('arg1', 'arg2')
-        mox.VerifyAll()
-
-        msg = 'Expected "%s", got %r' % (ret, got)
-        assert got == ret, msg
-
-    def test_calls_jpeg_when_args_length_equals_3(self):
-        mox = Mox()
-
-        mox.StubOutWithMock(sponge.plugins.image, 'jpeg')
-        ret = 'should_be_a_pil_img'
-        sponge.plugins.image.jpeg(path='arg1/arg2/arg3').AndReturn(ret)
-
-        mox.ReplayAll()
-        got = self.handler('arg1', 'arg2', 'arg3')
-        mox.VerifyAll()
-
-        msg = 'Expected "%s", got %r' % (ret, got)
-        assert got == ret, msg
-
-    def test_calls_jpeg_when_args_length_bigger_than_3_no_crop(self):
-        mox = Mox()
-
-        mox.StubOutWithMock(sponge.plugins.image, 'jpeg')
-        ret = 'should_be_a_pil_img'
-        sponge.plugins.image.jpeg(path='arg1/arg2/arg3/arg4').AndReturn(ret)
-
-        mox.ReplayAll()
-        got = self.handler('arg1', 'arg2', 'arg3', 'arg4')
-        mox.VerifyAll()
-
-        msg = 'Expected "%s", got %r' % (ret, got)
-        assert got == ret, msg
-
-    def test_calls_jpeg_when_args_length_bigger_than_3_crop_no_proportion(self):
-        mox = Mox()
-
-        mox.StubOutWithMock(sponge.plugins.image, 'jpeg')
-        ret = 'should_be_a_pil_img'
-        sponge.plugins.image.jpeg(path='crop/arg2/arg3/arg4').AndReturn(ret)
-
-        mox.ReplayAll()
-        got = self.handler('crop', 'arg2', 'arg3', 'arg4')
-        mox.VerifyAll()
-
-        msg = 'Expected "%s", got %r' % (ret, got)
-        assert got == ret, msg
-
-    def test_calls_jpeg_when_args_length_equals_3_and_crop(self):
-        mox = Mox()
-
-        mox.StubOutWithMock(sponge.plugins.image, 'jpeg')
-        mox.StubOutWithMock(sponge.plugins.image, 'picture')
-
-        ret = 'should_be_a_pil_img'
-
-        sponge.plugins.image.jpeg(path='crop/200x100/image.jpg')
-        sponge.plugins.image.picture(path='image.jpg', width=200, height=100). \
-                                             AndReturn(ret)
-
-        mox.ReplayAll()
-        got = self.handler('crop', '200x100', 'image.jpg')
-        mox.VerifyAll()
-
-        msg = 'Expected "%s", got %r' % (ret, got)
-        assert got == ret, msg
-
-    def test_creation_takes_optional_cache_path_string(self):
-        assert_raises(TypeError, ImageHandler, 5,
-                      exc_pattern=r'The path given to ImageHandler ' \
-                      'to cache must be a string, got 5')
-
-    def test_caching_fails_if_cache_path_does_not_exist(self):
-        mox = Mox()
-
-        class ImageHandlerStub(ImageHandler):
-            fs = mox.CreateMockAnything()
-
-        ImageHandlerStub.fs.exists('/full/path/to/cache').AndReturn(False)
-
-        mox.ReplayAll()
-        assert_raises(InvalidCachePath,
-                      ImageHandlerStub,
-                      '/full/path/to/cache',
-                      exc_pattern=r'The given path \(/full/path/to/cache\) ' \
-                      'does not exist, so that ImageHandler can not save ' \
-                      'cache files there.')
-        mox.VerifyAll()
-
-    def test_caching_return_if_already_exists(self):
-        mox = Mox()
-
-        old_jpeg = controller.jpeg
-        old_picture = controller.picture
-        old_serve_file = controller.serve_file
-
-        controller.jpeg = mox.CreateMockAnything()
-        controller.picture = mox.CreateMockAnything()
-        controller.serve_file = mox.CreateMockAnything()
-
-        cache_at = '/full/path/to/cache'
-        class ImageHandlerStub(ImageHandler):
-            fs = mox.CreateMockAnything()
-
-        ImageHandlerStub.fs.exists(cache_at).AndReturn(True)
-
-        controller.jpeg(path='imgs/image.jpg')
-        ImageHandlerStub.fs.join(cache_at, 'imgs/image.jpg'). \
-                         AndReturn('/should/be/cache/full/path.jpg')
-
-        ImageHandlerStub.fs.exists('/should/be/cache/full/path.jpg'). \
-                         AndReturn(True)
-        controller.serve_file('/should/be/cache/full/path.jpg',
-                              'image/jpeg'). \
-                   AndReturn('should-be-image-data')
-
-        mox.ReplayAll()
-        try:
-            img = ImageHandlerStub(cache_at)
-            assert img.should_cache
-            assert_equal(img.cache_path, cache_at)
-            got = img('imgs', 'image.jpg')
-            assert_equal(got, 'should-be-image-data')
-            mox.VerifyAll()
-        finally:
-            controller.jpeg = old_jpeg
-            controller.picture = old_picture
-            controller.serve_file = old_serve_file
-
-    def test_caching_return_if_already_exists(self):
-        mox = Mox()
-
-        old_jpeg = sponge.plugins.image.jpeg
-        old_picture = sponge.plugins.image.picture
-        old_serve_file = sponge.plugins.image.serve_file
-
-        sponge.plugins.image.jpeg = mox.CreateMockAnything()
-        sponge.plugins.image.picture = mox.CreateMockAnything()
-        sponge.plugins.image.serve_file = mox.CreateMockAnything()
-
-        cache_at = '/full/path/to/cache'
-        class ImageHandlerStub(ImageHandler):
-            fs = mox.CreateMockAnything()
-
-        ImageHandlerStub.fs.exists(cache_at).AndReturn(True)
-
-        sponge.plugins.image.jpeg(path='imgs/image.jpg').AndReturn('fake-img')
-        ImageHandlerStub.fs.join(cache_at, 'imgs/image.jpg'). \
-                         AndReturn('/should/be/cache/full/path.jpg')
-
-        ImageHandlerStub.fs.exists('/should/be/cache/full/path.jpg'). \
-                         AndReturn(False)
-
-        ImageHandlerStub.fs.dirname('/should/be/cache/full/path.jpg'). \
-                         AndReturn('dir-name')
-
-        ImageHandlerStub.fs.mkdir('dir-name')
-
-        file_mock = mox.CreateMockAnything()
-        ImageHandlerStub.fs.open_raw('/should/be/cache/full/path.jpg', 'w'). \
-                         AndReturn(file_mock)
-
-        file_mock.write('fake-img')
-        file_mock.close()
-
-        mox.ReplayAll()
-        try:
-            img = ImageHandlerStub(cache_at)
-            assert img.should_cache
-            assert_equal(img.cache_path, cache_at)
-            got = img('imgs', 'image.jpg')
-            assert_equal(got, 'fake-img')
-            mox.VerifyAll()
-        finally:
-            sponge.plugins.image.jpeg = old_jpeg
-            sponge.plugins.image.picture = old_picture
-            sponge.plugins.image.serve_file = old_serve_file
-
 class TestPaginator:
     def check_paginator(self, params, output):
         """
-        Helper method that instantiates a Paginator object from the passed
+        Helper method that instantiates a controller.Paginator object from the passed
         params and then checks that its attributes match the passed output.
         """
         count, num_pages, page_range = output
-        paginator = Paginator(*params)
+        paginator = controller.Paginator(*params)
         self.check_attribute('count', paginator, count, params)
         self.check_attribute('num_pages', paginator, num_pages, params)
         self.check_attribute('page_range', paginator, page_range, params)
@@ -274,7 +68,7 @@ class TestPaginator:
         """
         got = getattr(paginator, name)
         assert_equal(expected, got,
-            "For '%s', expected %s but got %s.  Paginator parameters were: %s"
+            "For '%s', expected %s but got %s.  controller.Paginator parameters were: %s"
             % (name, expected, got, params))
 
     def test_paginator(self):
@@ -286,9 +80,9 @@ class TestPaginator:
         eleven = ten + [11]
         tests = (
             # Each item is two tuples:
-            #     First tuple is Paginator parameters - object_list, per_page,
+            #     First tuple is controller.Paginator parameters - object_list, per_page,
             #         orphans, and allow_empty_first_page.
-            #     Second tuple is resulting Paginator attributes - count,
+            #     Second tuple is resulting controller.Paginator attributes - count,
             #         num_pages, and page_range.
             # Ten items, varying orphans, no empty first page.
             ((ten, 4, 0, False), (10, 3, [1, 2, 3])),
@@ -341,11 +135,11 @@ class TestPaginator:
 
     def check_indexes(self, params, page_num, indexes):
         """
-        Helper method that instantiates a Paginator object from the passed
+        Helper method that instantiates a controller.Paginator object from the passed
         params and then checks that the start and end indexes of the passed
         page_num match those given as a 2-tuple in indexes.
         """
-        paginator = Paginator(*params)
+        paginator = controller.Paginator(*params)
         if page_num == 'first':
             page_num = 1
         elif page_num == 'last':
@@ -353,7 +147,7 @@ class TestPaginator:
         page = paginator.page(page_num)
         start, end = indexes
         msg = ("For %s of page %s, expected %s but got %s."
-               " Paginator parameters were: %s")
+               " controller.Paginator parameters were: %s")
         assert_equal(start, page.start_index(),
             msg % ('start index', page_num, start, page.start_index(), params))
         assert_equal(end, page.end_index(),
@@ -366,7 +160,7 @@ class TestPaginator:
         ten = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         tests = (
             # Each item is three tuples:
-            #     First tuple is Paginator parameters - object_list, per_page,
+            #     First tuple is controller.Paginator parameters - object_list, per_page,
             #         orphans, and allow_empty_first_page.
             #     Second tuple is the start and end indexes of the first page.
             #     Third tuple is the start and end indexes of the last page.
@@ -400,23 +194,23 @@ class TestPaginator:
         for params, first, last in tests:
             self.check_indexes(params, 'first', first)
             self.check_indexes(params, 'last', last)
-        # When no items and no empty first page, we should get EmptyPage error.
-        assert_raises(EmptyPage, self.check_indexes, ([], 4, 0, False), 1, None)
-        assert_raises(EmptyPage, self.check_indexes, ([], 4, 1, False), 1, None)
-        assert_raises(EmptyPage, self.check_indexes, ([], 4, 2, False), 1, None)
+        # When no items and no empty first page, we should get controller.EmptyPage error.
+        assert_raises(controller.EmptyPage, self.check_indexes, ([], 4, 0, False), 1, None)
+        assert_raises(controller.EmptyPage, self.check_indexes, ([], 4, 1, False), 1, None)
+        assert_raises(controller.EmptyPage, self.check_indexes, ([], 4, 2, False), 1, None)
 
     def test_representation(self):
         class PaginatorStub:
             num_pages = 10
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
         assert_equal('<Page 2 of 10>', repr(page))
 
     def test_has_next_true(self):
         class PaginatorStub:
             num_pages = 10
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
         message = '%s should have next page, since is the page 2 of 10' % page
         assert page.has_next(), message
 
@@ -424,7 +218,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 2
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
         message = '%s should not have next page, since is the page 2 of 2' % page
         assert not page.has_next(), message
 
@@ -432,7 +226,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 10
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
         message = '%s should have previous page, since is the page 2' % page
         assert page.has_previous(), message
 
@@ -440,7 +234,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 2
 
-        page = Page([], 1, PaginatorStub)
+        page = controller.Page([], 1, PaginatorStub)
         message = '%s should not have previous page, since is the page 1' % page
         assert not page.has_previous(), message
 
@@ -448,7 +242,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 2
 
-        page = Page([], 1, PaginatorStub)
+        page = controller.Page([], 1, PaginatorStub)
         message = '%s should have other pages' % page
         assert page.has_other_pages(), message
 
@@ -456,7 +250,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 2
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
         message = '%s should have other pages' % page
         assert page.has_other_pages(), message
 
@@ -464,7 +258,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 3
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
         message = '%s should have other pages' % page
         assert page.has_other_pages(), message
 
@@ -472,7 +266,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 3
 
-        page = Page([], 3, PaginatorStub)
+        page = controller.Page([], 3, PaginatorStub)
         message = '%s should have other pages' % page
         assert page.has_other_pages(), message
 
@@ -480,7 +274,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 1
 
-        page = Page([], 1, PaginatorStub)
+        page = controller.Page([], 1, PaginatorStub)
         message = '%s should not have other pages' % page
         assert not page.has_other_pages(), message
 
@@ -488,7 +282,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 2
 
-        page = Page([], 1, PaginatorStub)
+        page = controller.Page([], 1, PaginatorStub)
 
         got = page.next_page_number()
         expected = 2
@@ -500,7 +294,7 @@ class TestPaginator:
         class PaginatorStub:
             num_pages = 2
 
-        page = Page([], 2, PaginatorStub)
+        page = controller.Page([], 2, PaginatorStub)
 
         got = page.previous_page_number()
         expected = 1
@@ -509,21 +303,20 @@ class TestPaginator:
         assert got == expected, message
 
     def test_page_validate_number_not_integer(self):
-        p = Paginator(range(5), 2)
-        assert_raises(PageNotAnInteger,
+        p = controller.Paginator(range(5), 2)
+        assert_raises(controller.PageNotAnInteger,
                       p.validate_number,
                       '1sda0')
 
     def test_page_validate_number_less_than_1(self):
-        p = Paginator(range(5), 2)
-        assert_raises(EmptyPage,
+        p = controller.Paginator(range(5), 2)
+        assert_raises(controller.EmptyPage,
                       p.validate_number,
                       -1)
 
     def test_page_validate_number_when_not_allowing_1st_empty_page(self):
-        p = Paginator([], 2,
+        p = controller.Paginator([], 2,
                                  allow_empty_first_page=False)
-        assert_raises(EmptyPage,
+        assert_raises(controller.EmptyPage,
                       p.validate_number,
                       1)
-

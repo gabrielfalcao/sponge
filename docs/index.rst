@@ -3,7 +3,7 @@
    Sponge basic setup <configuration>
    Sponge template helpers <templat>
    Sponge image helpers <image>
-   Sponge controller helpers <controller>
+   Sponge contrib <contrib>
    Sponge tutorial <tutorial>
 
 ====================

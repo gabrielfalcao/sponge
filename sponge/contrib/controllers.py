@@ -2,7 +2,6 @@
 # -*- coding: utf-8; -*-
 #
 # Copyright (C) 2009 Gabriel Falcão <gabriel@nacaolivre.org>
-# Copyright (C) 2009 Bernardo Heynemann <heynemann@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -18,13 +17,11 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
-
 import re
 import Image
-
 import cherrypy
 from cherrypy.lib.static import serve_file
-
+from math import ceil
 from sponge.core.io import FileSystem
 from sponge.image import jpeg, picture
 

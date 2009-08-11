@@ -2,15 +2,12 @@ all: clean test
 
 clean:
 	@echo "Cleaning up all *.pyc files ..."
-	@rm -rf .coverage
 	@find . -name '*.pyc' -delete
 	@echo "Cleaning up build files ..."
 	@rm -rf build
 test:
 	@echo "Running all tests ..."
-	@#This is done like that and not {unit,functional}
-	@#because this works anywhere.
-	@nosetests -s --with-coverage --cover-package=sponge tests/unit tests/functional
+	@nosetests -s --with-coverage --cover-package=sponge tests/{functional,unit}
 	@echo "Done."
 
 unit:
