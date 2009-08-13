@@ -208,13 +208,16 @@ class SpongeConfig(object):
                 fallback()
                 continue
 
-            if not isinstance(cls.__routes__, dict):
+            if not isinstance(cls.__routes__, list):
                 fallback()
                 continue
 
             routed = True
             dispatcher = cherrypy.dispatch.RoutesDispatcher()
-            for k, v in cls.__routes__.items():
+            for k, v in cls.__routes__:
+                if k is None:
+                    k = "%s.%s" % (cls.__name__, v['method'])
+
                 part1 = mountpoint.rstrip('/')
                 part2 = v['route'].lstrip('/')
                 new_route = "/".join([part1, part2])

@@ -33,18 +33,32 @@ def test_route_return_tuple():
            'route should be a tuple'
     assert len(my_func) == 2, 'the tuple should have two items'
     assert callable(my_func[0]), 'first item of tuple should be the actual callable'
-    assert isinstance(my_func[1], dict), '2nd item of tuple should be a dict'
+    assert isinstance(my_func[1], tuple)
 
-def test_controller_with_routes():
+def test_controller_with_route_named():
     class MyController(controller.Controller):
-        @controller.route('my_route_name', '/path/:to/:route/:param3')
+        @controller.route('/path/:to/:route/:param3', name='my_route_name')
         def some_method(self, to, route, param3):
             return 'something'
 
     assert hasattr(MyController, '__routes__'), 'MyController should have __routes__'
-    assert_equal(MyController.__routes__, {
-        'my_route_name': {
+    assert_equal(MyController.__routes__, [
+        ('my_route_name', {
             'route': '/path/:to/:route/:param3',
             'method': 'some_method'
-        }
-    })
+        }),
+    ])
+
+def test_controller_with_route_without_name():
+    class MyController(controller.Controller):
+        @controller.route('/path/:to/:route/:param3')
+        def some_method(self, to, route, param3):
+            return 'something'
+
+    assert hasattr(MyController, '__routes__'), 'MyController should have __routes__'
+    assert_equal(MyController.__routes__, [
+        (None, {
+            'route': '/path/:to/:route/:param3',
+            'method': 'some_method'
+        }),
+    ])

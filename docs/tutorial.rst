@@ -33,7 +33,7 @@ Example::
         >>> from sponge.controller import route
         >>> from sponge.controller import Controller
         >>> class HelloWorld(Controller):
-        ...     @route('say_name', '/say/:some/name')
+        ...     @route('/say/:some/name', name='say_name')
         ...     def name_controller(self, some):
         ...         return 'Hello %s!' % some
 

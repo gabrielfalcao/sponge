@@ -20,14 +20,14 @@
 import re
 import cherrypy
 
-def route(name, route):
+def route(route, name=None):
     def dec(func):
-        conf = {
-            name: {
+        conf = (
+            name, {
                 'route': route,
                 'method': func.__name__
             }
-        }
+        )
         return func, conf
 
     return dec
@@ -35,12 +35,12 @@ def route(name, route):
 class MetaController(type):
     def __init__(cls, name, bases, attrs):
         if name not in ('MetaController', 'Controller'):
-            cls.__routes__ = {}
+            cls.__routes__ = []
             for attr, value in attrs.items():
                 if isinstance(value, tuple) and len(value) is 2:
                     method, conf = value
                     setattr(cls, attr, method)
-                    cls.__routes__.update(conf)
+                    cls.__routes__.append(conf)
 
         super(MetaController, cls).__init__(name, bases, attrs)
 

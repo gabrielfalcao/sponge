@@ -217,16 +217,17 @@ def test_can_setup_all_with_routes():
     core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
 
     class_mock = mox.CreateMockAnything()
-    class_mock.__routes__ = {
-        'show_photos': {
+    class_mock.__name__ = "MyPhotoController"
+    class_mock.__routes__ = [
+        ('show_photos', {
             'route': '/photos',
             'method': 'list_photos',
-        },
-        'edit_photo': {
+        }),
+        (None, {
             'route': '/photo/:id/edit',
             'method': 'edit',
-        }
-    }
+        })
+    ]
     controller_mock = mox.CreateMockAnything()
     cloader_mock.load('SomeController').AndReturn(class_mock)
     class_mock().AndReturn(controller_mock)
@@ -239,7 +240,7 @@ def test_can_setup_all_with_routes():
                         controller=controller_mock,
                         route='/photos',
                         action='list_photos')
-    routes_mock.connect(name='edit_photo',
+    routes_mock.connect(name='MyPhotoController.edit',
                         controller=controller_mock,
                         route='/photo/:id/edit',
                         action='edit')
