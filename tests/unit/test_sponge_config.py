@@ -92,6 +92,18 @@ def test_can_setup_all_without_routes_attr():
 
     cf = core.ConfigValidator(config_dict)
     sp = core.SpongeConfig(d, cf)
+    sp.set_setting = mox.CreateMockAnything()
+
+    sp.set_setting('server.socket_port', 80)
+    sp.set_setting('server.socket_host', '0.0.0.0')
+    sp.set_setting('tools.sessions.on', True)
+    sp.set_setting('tools.sessions.timeout', 60)
+    sp.set_setting('tools.encode.on', True)
+    sp.set_setting('tools.encode.encoding', 'utf-8')
+    sp.set_setting('tools.trailing_slash.on', True)
+    sp.set_setting('sponge', config_dict)
+    sp.set_setting('template.dir', '/path/to/project/templates')
+    sp.set_setting('image.dir', '/path/to/project/images')
     mox.ReplayAll()
     sys.stderr = StringIO()
     try:
@@ -132,6 +144,19 @@ def test_can_setup_all_without_routes_dict():
 
     cf = core.ConfigValidator(config_dict)
     sp = core.SpongeConfig(d, cf)
+    sp.set_setting = mox.CreateMockAnything()
+
+    sp.set_setting('server.socket_port', 80)
+    sp.set_setting('server.socket_host', '0.0.0.0')
+    sp.set_setting('tools.sessions.on', True)
+    sp.set_setting('tools.sessions.timeout', 60)
+    sp.set_setting('tools.encode.on', True)
+    sp.set_setting('tools.encode.encoding', 'utf-8')
+    sp.set_setting('tools.trailing_slash.on', True)
+    sp.set_setting('sponge', config_dict)
+    sp.set_setting('template.dir', '/path/to/project/templates')
+    sp.set_setting('image.dir', '/path/to/project/images')
+
     mox.ReplayAll()
     sys.stderr = StringIO()
     try:

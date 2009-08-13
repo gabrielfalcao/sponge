@@ -154,6 +154,8 @@ class SpongeConfig(object):
 
         self.set_setting('server.socket_port', int(self.validator.cdict['port']))
         self.set_setting('server.socket_host', self.validator.cdict['host'])
+        self.set_setting('tools.sessions.on', True)
+        self.set_setting('tools.sessions.timeout', 60)
         self.set_setting('tools.encode.on', True)
         self.set_setting('tools.encode.encoding', 'utf-8')
         self.set_setting('tools.trailing_slash.on', True)
