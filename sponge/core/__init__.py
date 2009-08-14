@@ -221,7 +221,6 @@ class SpongeConfig(object):
                 part1 = mountpoint.rstrip('/')
                 part2 = v['route'].lstrip('/')
                 new_route = "/".join([part1, part2])
-
                 dispatcher.connect(name=k,
                                    route=new_route,
                                    controller=cls(),

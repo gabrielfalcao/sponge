@@ -284,13 +284,14 @@ def test_create_success():
          AndReturn(file_mock)
 
     expected_dict = basic_config.copy()
+    relative_path = 'my-project'
     expected_dict['application'].update({
         'static': {
-            '/media': join(full_path, 'media')
+            '/media': join(relative_path, 'media')
         },
-        'path': join(full_path, 'app', 'controllers.py'),
-        'image-dir': join(full_path, 'media', 'img'),
-        'template-dir': join(full_path, 'templates'),
+        'path': join(relative_path, 'app', 'controllers.py'),
+        'image-dir': join(relative_path, 'media', 'img'),
+        'template-dir': join(relative_path, 'templates'),
     })
 
     bob.yaml.dump(expected_dict, indent=True).AndReturn('should-be-a-yaml')
