@@ -124,16 +124,16 @@ class Bob(object):
         cfg = self.fs.open(self.fs.join(path, 'settings.yml'), 'w')
         cdict = basic_config.copy()
 
-        media_path = self.fs.join(project_name, 'media')
+        media_path = self.fs.join('media')
         cdict['application']['static']['/media'] = media_path
 
-        controller_path = self.fs.join(project_name, 'app', 'controllers.py')
+        controller_path = self.fs.join('app', 'controllers.py')
         cdict['application']['path'] = controller_path
 
-        image_path = self.fs.join(project_name, 'media', 'img')
+        image_path = self.fs.join('media', 'img')
         cdict['application']['image-dir'] = image_path
 
-        template_path = self.fs.join(project_name, 'templates')
+        template_path = self.fs.join('templates')
         cdict['application']['template-dir'] = template_path
 
         yml_data = self.fix_yml(yaml.dump(cdict, indent=True))
