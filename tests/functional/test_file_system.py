@@ -78,6 +78,18 @@ def test_non_recursive_locate():
     assert len(files) == 1
     assert split(files[0])[-1] == "test.txt"
 
-def test_dirname():
+def test_open_non_abspath():
     fs = FileSystem()
-    assert fs.dirname('/path/to/file') == '/path/to'
+    assert fs.open('tests/functional/data/some.txt', 'r').read() == 'some text here!\n'
+
+def test_open_abspath():
+    fs = FileSystem()
+    assert fs.open(abspath('./tests/functional/data/some.txt'), 'r').read() == 'some text here!\n'
+
+def test_open_raw_non_abspath():
+    fs = FileSystem()
+    assert fs.open_raw('tests/functional/data/some.txt', 'r').read() == 'some text here!\n'
+
+def test_open_raw_abspath():
+    fs = FileSystem()
+    assert fs.open_raw(abspath('./tests/functional/data/some.txt'), 'r').read() == 'some text here!\n'
