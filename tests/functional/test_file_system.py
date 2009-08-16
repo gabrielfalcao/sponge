@@ -78,3 +78,6 @@ def test_non_recursive_locate():
     assert len(files) == 1
     assert split(files[0])[-1] == "test.txt"
 
+def test_dirname():
+    fs = FileSystem()
+    assert fs.dirname('/path/to/file') == '/path/to'

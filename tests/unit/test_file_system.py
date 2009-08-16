@@ -313,3 +313,106 @@ def test_locate_recursive():
         mox.VerifyAll()
     finally:
         mox.UnsetStubs()
+
+def test_mkdir_success():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+
+    class MyFs(io.FileSystem):
+        pass
+
+    io.os.makedirs('/make/all/those/subdirs')
+
+    mox.ReplayAll()
+    try:
+        MyFs.mkdir('/make/all/those/subdirs')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_mkdir_ignore_dirs_already_exists():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.os, 'path')
+
+    class MyFs(io.FileSystem):
+        pass
+
+    oserror = OSError()
+    oserror.errno = 17
+
+    io.os.makedirs('/make/all/those/subdirs').AndRaise(oserror)
+    io.os.path.isdir('/make/all/those/subdirs').AndReturn(True)
+
+    mox.ReplayAll()
+    try:
+        MyFs.mkdir('/make/all/those/subdirs')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def test_mkdir_raises_on_oserror_errno_not_17():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.os, 'path')
+
+    class MyFs(io.FileSystem):
+        pass
+
+    oserror = OSError()
+    oserror.errno = 0
+
+    io.os.makedirs('/make/all/those/subdirs').AndRaise(oserror)
+
+    mox.ReplayAll()
+    try:
+        assert_raises(OSError, MyFs.mkdir, '/make/all/those/subdirs')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def tes_mkdir_raises_on_oserror_errno_not_17():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.os, 'path')
+
+    class MyFs(io.FileSystem):
+        pass
+
+    oserror = OSError()
+    oserror.errno = 0
+
+    io.os.makedirs('/make/all/those/subdirs').AndRaise(oserror)
+
+    mox.ReplayAll()
+    try:
+        assert_raises(OSError, MyFs.mkdir, '/make/all/those/subdirs')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+
+def tes_mkdir_raises_when_path_is_not_a_dir():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.os, 'path')
+
+    class MyFs(io.FileSystem):
+        pass
+
+    oserror = OSError()
+    oserror.errno = 17
+
+    io.os.makedirs('/make/all/those/subdirs').AndRaise(oserror)
+    io.os.isdir('/make/all/those/subdirs').AndReturn(False)
+    mox.ReplayAll()
+    try:
+        assert_raises(OSError, MyFs.mkdir, '/make/all/those/subdirs')
+        mox.VerifyAll()
+    finally:
+        mox.UnsetStubs()
+

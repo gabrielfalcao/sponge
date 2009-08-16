@@ -136,10 +136,8 @@ class FileSystem(object):
                 f.close()
             except IOError:
                 output("---> Creating directory %s" % file_name)
-                try:
-                    cls.mkdir(file_name)
-                except IOError, e:
-                    pass
+                cls.mkdir(file_name)
+
         cls.popd()
 
     @classmethod

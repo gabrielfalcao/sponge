@@ -18,4 +18,12 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
+from sponge.bob import Bob
 
+def test_get_file_path():
+    b = Bob()
+    path = b.get_file_path()
+
+    # ignoring the "c" of "pyc", if any
+    path = path.rstrip("c")
+    assert path.endswith('sponge/bob/__init__.py')

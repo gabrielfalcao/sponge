@@ -96,12 +96,6 @@ def test_config_validator_has_method_validate_mandatory():
     assert callable(ConfigValidator.validate_mandatory), \
            'ConfigValidator.validate_mandatory should be callable'
 
-def test_config_validator_has_method_validate_optional():
-    assert hasattr(ConfigValidator, 'validate_optional'), \
-           'ConfigValidator should have the method validate_optional'
-    assert callable(ConfigValidator.validate_optional), \
-           'ConfigValidator.validate_optional should be callable'
-
 def test_config_validator_validate_calls_validation_methods():
     mocker = Mox()
     cp = ConfigValidator({})
@@ -109,7 +103,6 @@ def test_config_validator_validate_calls_validation_methods():
     cp.validate_optional = mocker.CreateMockAnything()
 
     cp.validate_mandatory()
-    cp.validate_optional()
 
     mocker.ReplayAll()
     cp.validate()

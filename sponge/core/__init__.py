@@ -58,7 +58,8 @@ class ConfigValidator(object):
         },
         'databases': {
             r'^[\w_-]+$': '^.+$'
-        }
+        },
+        'extra': AnyValue(dict)
     }
 
     def __init__(self, cdict):
@@ -68,7 +69,6 @@ class ConfigValidator(object):
 
     def validate(self):
         self.validate_mandatory()
-        self.validate_optional()
 
     def raise_invalid(self, option, value):
         raise InvalidValueError, 'Invalid value in "%s" ' \
@@ -106,9 +106,6 @@ class ConfigValidator(object):
                 self.validate_dict(option, validator, raw_value)
 
         return True
-
-    def validate_optional(self):
-        pass
 
     def validate_dict(self, option, validator, dict_to_validate):
         for key_regex, value_regex in validator.items():
@@ -160,6 +157,8 @@ class SpongeConfig(object):
         self.set_setting('tools.encode.encoding', 'utf-8')
         self.set_setting('tools.trailing_slash.on', True)
         self.set_setting('sponge', self.validator.cdict)
+        if 'extra' in self.validator.cdict:
+            self.set_setting('sponge.extra', self.validator.cdict['extra'])
 
         application = self.validator.cdict['application']
 
