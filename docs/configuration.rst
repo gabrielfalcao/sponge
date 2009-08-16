@@ -61,3 +61,41 @@ This is a full example for a Sponge's possible configuration::
       media: mysql://root@localhost/webapp_media
       general: postgres://root:p4ssword@localhost/webapp_general
       metadata: sqlite:///webapp_metadata.db
+
+extra
+-----
+
+You can also provide extra configuration, so that you can use that
+extra data from within your application.
+
+In order to do that, just provide a key named "extra" on the body of
+your config file.
+
+example
+=======
+
+Simple usage of "extra" configuration::
+
+    run-as: standalone
+    host: 127.0.0.1
+    port: 8080
+    autoreload: true
+    application:
+      path: /home/user/projects/web-app/module
+      template-dir: /home/user/projects/web-app/html
+      image-dir: /home/user/projects/web-app/images
+      classes:
+        SomeController: /
+
+    extra:
+      packages-dir: /home/user/packages
+      hardcoded-links:
+        Support: http://my-homepage.com/support
+        Documentation: http://my-homepage.com/docs
+
+
+And to use it within the application::
+
+    >>> from cherrypy import config
+    >>> links = config['sponge.extra']['hardcoded-links']
+    >>> packages_at = config['sponge.extra']['packages-dir']
