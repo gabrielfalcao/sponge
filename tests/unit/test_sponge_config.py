@@ -267,3 +267,72 @@ def test_can_setup_all_with_routes():
     finally:
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
+
+def test_boot():
+    mox = Mox()
+    d = {}
+    class_loader = core.ClassLoader
+    cherrypy = core.cherrypy
+    core.ClassLoader = mox.CreateMockAnything()
+    core.cherrypy = mox.CreateMockAnything()
+    core.cherrypy.tree = mox.CreateMockAnything()
+
+
+    module_mock0 = mox.CreateMockAnything()
+    module_mock0.my_function()
+    cloader_mock0 = mox.CreateMockAnything()
+    cloader_mock0.get_module().AndReturn(module_mock0)
+
+    core.ClassLoader('/path/to/boot/file.py').AndReturn(cloader_mock0)
+
+
+    cloader_mock = mox.CreateMockAnything()
+    core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
+
+    class_mock = mox.CreateMockAnything()
+    class_mock.__routes__ = 'blabla'
+
+    cloader_mock.load('SomeController').AndReturn(class_mock)
+    class_mock().AndReturn('should_be_some_controller_instance')
+
+    core.cherrypy.tree.mount(root='should_be_some_controller_instance',
+                             script_name='/', config={
+                                 '/media': {
+                                     'tools.staticdir.dir': '/absolute/path/my/media',
+                                     'tools.staticdir.on': True
+                                 }
+                             })
+
+    my_config = config_dict.copy()
+    my_config['application']['boot'] = {
+        'path': '/path/to/boot/file.py',
+        'callable': 'my_function'
+    }
+    cf = core.ConfigValidator(my_config)
+
+    sp = core.SpongeConfig(d, cf)
+    sp.set_setting = mox.CreateMockAnything()
+
+    sp.set_setting('server.socket_port', 80)
+    sp.set_setting('server.socket_host', '0.0.0.0')
+    sp.set_setting('tools.sessions.on', True)
+    sp.set_setting('tools.sessions.timeout', 60)
+    sp.set_setting('tools.encode.on', True)
+    sp.set_setting('tools.encode.encoding', 'utf-8')
+    sp.set_setting('tools.trailing_slash.on', True)
+    sp.set_setting('sponge', config_dict)
+    sp.set_setting('sponge.extra', config_dict['extra'])
+    sp.set_setting('template.dir', '/path/to/project/templates')
+    sp.set_setting('image.dir', '/path/to/project/images')
+
+    mox.ReplayAll()
+    sys.stderr = StringIO()
+    try:
+        sp.setup_all('/absolute/path/')
+        assert_equals(sys.stderr.getvalue(), '')
+        mox.VerifyAll()
+    finally:
+        core.ClassLoader = class_loader
+        core.cherrypy = cherrypy
+        sys.stderr = sys.__stderr__
+

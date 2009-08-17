@@ -18,7 +18,6 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-from re import escape
 from mox import Mox
 from nose.tools import assert_equals
 from utils import assert_raises
@@ -103,3 +102,40 @@ def test_class_loader_loads_from_module():
     finally:
         io.__import__ = __import__
         mox.UnsetStubs()
+
+def test_get_module():
+    mox = Mox()
+
+    mox.StubOutWithMock(io, 'os')
+    mox.StubOutWithMock(io.sys, 'path')
+
+    io.os.path = mox.CreateMockAnything()
+    io.__import__ = mox.CreateMockAnything()
+
+    class_path = '/full/path/to/module/'
+    module_name = 'module'
+    module_dir = '/full/path/to/'
+
+    io.os.path = mox.CreateMockAnything()
+
+    io.os.path.isdir(class_path).AndReturn(True)
+
+    io.os.path.split(class_path.rstrip('/')).AndReturn((module_dir, module_name))
+
+    io.sys.path.append(module_dir)
+    io.sys.path.pop()
+
+    module_mock = mox.CreateMockAnything()
+    module_mock.ClassIWantToLoad = 'should_be_expected_class'
+    io.__import__('module').AndReturn(module_mock)
+
+    mox.ReplayAll()
+
+    try:
+        cl = io.ClassLoader(class_path)
+        assert_equals(cl.get_module(), module_mock)
+        mox.VerifyAll()
+    finally:
+        io.__import__ = __import__
+        mox.UnsetStubs()
+

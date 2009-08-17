@@ -162,6 +162,15 @@ class SpongeConfig(object):
 
         application = self.validator.cdict['application']
 
+        if 'boot' in application and isinstance(application['boot'], dict):
+            path = application['boot']['path']
+            call = application['boot']['callable']
+
+            cloader = ClassLoader(path)
+            function = getattr(cloader.get_module(), call)
+
+            apply(function)
+
         template_dir = application['template-dir']
         template_path = self.fs.join(current_full_path, template_dir)
         self.set_setting('template.dir', template_path)

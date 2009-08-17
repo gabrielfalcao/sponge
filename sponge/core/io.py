@@ -179,5 +179,8 @@ class ClassLoader(object):
 
         sys.path.pop()
 
+    def get_module(self):
+        return self.module
+
     def load(self, classname):
         return getattr(self.module, classname)

@@ -99,3 +99,74 @@ And to use it within the application::
     >>> from cherrypy import config
     >>> links = config['sponge.extra']['hardcoded-links']
     >>> packages_at = config['sponge.extra']['packages-dir']
+
+application
+-----------
+
+All your application-related configuration relies under the application configuration key
+
+
+Parameters:
+===========
+
+path
+^^^^
+
+The path to python module or file which contains all the controller classes to be routed.
+
+template-dir
+^^^^^^^^^^^^
+
+The path in which sponge will look for genshi templates.
+
+image-dir
+^^^^^^^^^
+
+The path in which sponge will look for, and save images. In a
+nutshell, `sponge.contrib.controllers.ImageHandler` will use it.
+
+classes
+^^^^^^^
+
+A key/value pair configuration in which the "key" is the name of the
+class to load, and the "value" is the base path to mount the
+controller at.
+
+Example::
+
+    application:
+      path: /home/user/projects/web-app/controllers.py
+      classes:
+        MainController: /
+        AjaxController: /ajax
+        AdminController: /admin
+
+boot
+^^^^
+
+Configuration for a "boot" callable.
+It is specially useful for subscribing `cherrypy's plugins <http://www.cherrypy.org/wiki/CustomPlugins>`_.
+Takes two parameters: `path` and `callable`.
+Sponge will import the module at path, and call callable.
+
+Example:
+
+Supposing that you have the following code at `/home/user/project/core.py::
+
+    >>> import cherrypy
+    >>> def prepare_my_app():
+    ...     if 'database' not in cherrypy.config:
+    ...         print "FATAL: You did not configure the database!"
+    ...         raise SystemExit(1)
+
+Then, you could configure at your project settings.yml::
+
+    application:
+      path: /home/user/projects/web-app/controllers.py
+      classes:
+        MainController: /
+      boot:
+        path: /home/user/project/core.py
+        callable: prepare_my_app
+
+So, when you just run `bob go`, the function prepare_my_app() will be called.
