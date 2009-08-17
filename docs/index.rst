@@ -1,5 +1,6 @@
 .. toctree::
    :maxdepth: 2
+   Dependencies <dependencies>
    Sponge basic setup <configuration>
    Sponge template helpers <template>
    Sponge helpers <helpers>
@@ -20,11 +21,16 @@ For instance:
  * Ready-to-use Image handler controller.
  * Focused in testablility and simplicity.
 
+Starting to play !
+------------------
+
+* :ref:`Dependencies <dependencies>`
+* :ref:`Tutorial <tutorial>`
+
 Reference
 ---------
 
-* :ref:`Tutorial <tutorial>`
-* :ref:`Basic Sponge setup <configuration>`
+* :ref:`Project Configuration <configuration>`
 * :ref:`Templates <template>`
 * :ref:`Helpers (imaging, pagination etc) <helpers>`
 * :ref:`Contrib <contrib>`
