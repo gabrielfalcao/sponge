@@ -51,31 +51,41 @@ class Bob(object):
     """Sponge Bob is the responsible for managing
     the user's application and its modules."""
 
-    ACTIONS = 'create', 'go', 'start'
+    ACTIONS = [
+        ('create', '<projectname> - creates a new project, which means creating a new folder in current directory, named projectname'),
+        ('go', 'start the cherrypy server using the configuration file settings.yml in current directory.'),
+        ('start', '<projectname> executes both bob create and bob go'),
+    ]
 
     def __init__(self, parser=None, fs=None):
         self.parser = parser
         if not self.parser:
-            usage = "\n>>> %s <<<\n\nTo use type %%prog [options]" \
-                    " or %%prog -h (--help) for help with" \
-                    " the available options" % self.__doc__
-            self.parser = optparse.OptionParser(usage=usage,
+            self.parser = optparse.OptionParser(usage=self.get_help(),
                                                 description=__doc__,
                                                 version=version)
         self.fs = fs
         if not self.fs:
             self.fs = FileSystem()
 
+    def get_help(self):
+        actions = "\n".join(["%s %s" % (k, v) for k, v in self.ACTIONS])
+        usage = "\n %s \n\nTo use type %%prog [options]" \
+                " or %%prog -h (--help) for help with" \
+                " the available options\n\nACTIONS:\n\n%s" % (self.__doc__, actions)
+
+        return usage
+
     def exit(self, code=1):
         raise SystemExit(code)
 
     def run(self):
+        accepted = [a[0] for a in self.ACTIONS]
         options, args = self.parser.parse_args()
         error_msg = '\nBob got a error when %s.\n    %s\n'
 
         if not args:
             msg = '\nmissing argument, choose one in %s\n'
-            sys.stderr.write(msg % ", ".join(self.ACTIONS))
+            sys.stderr.write(msg % ", ".join(accepted))
             self.exit()
 
         if args[0] not in accepted:
