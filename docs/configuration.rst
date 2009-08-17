@@ -72,7 +72,7 @@ In order to do that, just provide a key named "extra" on the body of
 your config file.
 
 example
-=======
+:::::::
 
 Simple usage of "extra" configuration::
 
@@ -107,7 +107,7 @@ All your application-related configuration relies under the application configur
 
 
 Parameters:
-===========
+:::::::::::
 
 path
 ^^^^
