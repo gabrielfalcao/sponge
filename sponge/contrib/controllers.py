@@ -20,7 +20,7 @@
 import re
 import cherrypy
 
-from cherrypy.lib.static import serve_file
+from cherrypy.lib import static
 
 from sponge.core.io import FileSystem
 from sponge.helpers.image import jpeg, picture
@@ -66,7 +66,7 @@ class ImageHandler(object):
         if self.should_cache:
             cache_full_path = self.get_cache_path(path)
             if self.fs.exists(cache_full_path):
-                return serve_file(cache_full_path, 'image/jpeg')
+                return static.serve_file(cache_full_path, 'image/jpeg')
 
         if len(args) >= 3 and args[0] == 'crop':
             proportion = re.match(r'(?P<width>\d+)x(?P<height>\d+)',

@@ -143,11 +143,11 @@ class TestImageHandler:
 
         old_jpeg = controllers.jpeg
         old_picture = controllers.picture
-        old_serve_file = controllers.serve_file
+        old_static = controllers.static
 
+        mox.StubOutWithMock(controllers, 'static')
         controllers.jpeg = mox.CreateMockAnything()
         controllers.picture = mox.CreateMockAnything()
-        controllers.serve_file = mox.CreateMockAnything()
 
         cache_at = '/full/path/to/cache'
         class ImageHandlerStub(controllers.ImageHandler):
@@ -161,7 +161,7 @@ class TestImageHandler:
 
         ImageHandlerStub.fs.exists('/should/be/cache/full/path.jpg'). \
                          AndReturn(True)
-        controllers.serve_file('/should/be/cache/full/path.jpg',
+        controllers.static.serve_file('/should/be/cache/full/path.jpg',
                               'image/jpeg'). \
                    AndReturn('should-be-image-data')
 
@@ -176,18 +176,15 @@ class TestImageHandler:
         finally:
             controllers.jpeg = old_jpeg
             controllers.picture = old_picture
-            controllers.serve_file = old_serve_file
+            mox.UnsetStubs()
 
-    def test_caching_return_if_already_exists(self):
+    def test_caching_opens_if_does_not_exist(self):
         mox = Mox()
 
         old_jpeg = controllers.jpeg
         old_picture = controllers.picture
-        old_serve_file = controllers.serve_file
-
         controllers.jpeg = mox.CreateMockAnything()
         controllers.picture = mox.CreateMockAnything()
-        controllers.serve_file = mox.CreateMockAnything()
 
         cache_at = '/full/path/to/cache'
         class ImageHandlerStub(controllers.ImageHandler):
@@ -225,5 +222,4 @@ class TestImageHandler:
         finally:
             controllers.jpeg = old_jpeg
             controllers.picture = old_picture
-            controllers.serve_file = old_serve_file
 

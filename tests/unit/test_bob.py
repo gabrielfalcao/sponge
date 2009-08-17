@@ -340,3 +340,15 @@ test:
     got = b.fix_yml(wrong)
 
     assert_equals(got, expected)
+
+def test_bob_help():
+    b = bob.Bob()
+    assert_equals(b.get_help(), "\n Sponge Bob is the responsible for " \
+                  "managing\n    the user's application and its modules. " \
+                  "\n\nTo use type %prog [options] or %prog -h (--help) " \
+                  "for help with the available options\n\nACTIONS:\n\ncreate " \
+                  "<projectname> - creates a new project, which means " \
+                  "creating a new folder in current directory, named " \
+                  "projectname\ngo start the cherrypy server using the " \
+                  "configuration file settings.yml in current directory." \
+                  "\nstart <projectname> executes both bob create and bob go")

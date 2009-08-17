@@ -56,10 +56,6 @@ class FileSystem(object):
         return fname
 
     @classmethod
-    def dirname(cls, path):
-        return dirname(path)
-
-    @classmethod
     def exists(cls, path):
         return exists(path)
 
