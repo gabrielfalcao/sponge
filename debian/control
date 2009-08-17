@@ -2,7 +2,7 @@ Source: python-sponge
 Section: python
 Priority: optional
 Maintainer: Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>
-Standards-Version: 3.8.2
+Standards-Version: 3.8.0
 Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-cherrypy3, python-genshi, python-imaging, python-yaml, python-nose, python-mox
 Build-Depends-Indep: python-sphinx
 Homepage: http://www.sponge.org/
