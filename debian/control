@@ -16,4 +16,6 @@ Recommends:
 Suggests:
 Description: Sponge is a web framework built on top of CherryPy and Genshi
  Sponge is a very tiny web framework, aiming on testability thus being
- simple enough to always keep things dry.
+ simple enough to always keep things DRY (Don't Repeat Yourself),
+ which is a development approach with a philosophy aimed at reducing
+ repetition of code.
