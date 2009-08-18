@@ -13,5 +13,6 @@ build/python-sponge::
 	rm -rf docs/_build/html/_sources/
 
 clean::
+	rm -f debian/files
 	rm -rf docs/_build/*
 	rm -rf build
