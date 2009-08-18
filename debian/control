@@ -15,5 +15,5 @@ Depends: ${misc:Depends}, ${python:Depends}, python-cherrypy3, python-genshi, py
 Recommends:
 Suggests:
 Description: Sponge is a web framework built on top of CherryPy and Genshi
- Sponge is a very tiny web framework, aiming to be simple enough to
- always keep things dry.
+ Sponge is a very tiny web framework, aiming on testability thus being
+ simple enough to always keep things dry.

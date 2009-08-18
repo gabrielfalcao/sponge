@@ -1,8 +1,8 @@
 python-sponge (0.3.0) experimental; urgency=low
 
-  * New release.
+  * New release. (Closes: #542134)
 
- -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Sun, 16 Aug 2009 23:57:38 -0300
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Mon, 17 Aug 2009 22:42:47 -0300
 
 python-sponge (0.2.1) experimental; urgency=low
 
