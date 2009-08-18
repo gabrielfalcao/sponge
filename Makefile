@@ -1,3 +1,8 @@
+version := $(python -c 'import sponge; print sponge.__version__')
+package-name := sponge-${version}
+debian-name := sponge_${version}
+debian-tarball-name := ${debian-name}.orig.tar.gz
+
 all: clean test
 
 clean:
@@ -30,9 +35,13 @@ build: test
 tarball: test
 	@make clean
 	@echo "Preparing tarball ..."
-	@cp -drf . ../sponge-`python -c 'import sponge; print sponge.__version__'`
-	@rm -rf ../sponge-`python -c 'import sponge; print sponge.__version__'`/.git
-	@echo "Creating tarball ..."	
-	@tar czf sponge-`python -c 'import sponge; print sponge.__version__'`.tar.gz ../sponge-`python -c 'import sponge; print sponge.__version__'`
-	@rm -rf ../sponge-`python -c 'import sponge; print sponge.__version__'`
-	@echo "Tarball created at at sponge-`python -c 'import sponge; print sponge.__version__'`.tar.gz"
+	@cp -drf . ../${package-name}
+	@rm -rf ../${package-name}/.git
+	@echo "Creating tarball ..."
+	@tar czf ${package-name}.tar.gz ../${package-name}
+	@rm -rf ../${package-name}
+	@echo "Tarball created at at "${package-name}.tar.gz
+
+deb-tarball: tarball
+	@cp ${package-name}.tar.gz ${debian-tarball-name}
+	@echo "Tarball created at at "${package-name}.tar.gz
