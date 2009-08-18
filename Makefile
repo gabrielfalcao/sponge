@@ -1,6 +1,6 @@
-version := $(python -c 'import sponge; print sponge.__version__')
+version := `python -c 'import sponge; print sponge.__version__'`
 package-name := sponge-${version}
-debian-name := sponge_${version}
+debian-name := python-sponge_${version}
 debian-tarball-name := ${debian-name}.orig.tar.gz
 
 all: clean test
@@ -44,4 +44,4 @@ tarball: test
 
 deb-tarball: tarball
 	@cp ${package-name}.tar.gz ${debian-tarball-name}
-	@echo "Tarball created at at "${package-name}.tar.gz
+	@echo "Tarball created at at "${debian-tarball-name}
