@@ -79,7 +79,7 @@ def test_can_setup_all_without_routes_attr():
     core.ClassLoader('/absolute/path/path/to/project').AndReturn(cloader_mock)
 
     class_mock = lambda: 'should_be_some_controller_instance'
-    class_mock.__repr__ = lambda: 'class_mock_lambda'
+    class_mock.__name__ = 'class_mock_lambda'
 
     cloader_mock.load('SomeController').AndReturn(class_mock)
 
@@ -111,7 +111,7 @@ def test_can_setup_all_without_routes_attr():
     try:
         sp.setup_all('/absolute/path/')
         assert_equals(sys.stderr.getvalue(),
-                      '\nWARNING: The class %s has no routes\n' % repr(class_mock))
+                      '\nWARNING: The class %s has no routes\n' % class_mock.__name__)
         mox.VerifyAll()
     finally:
         core.ClassLoader = class_loader

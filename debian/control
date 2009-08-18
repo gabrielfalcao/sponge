@@ -3,9 +3,9 @@ Section: python
 Priority: optional
 Maintainer: Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>
 Standards-Version: 3.8.0
-Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-cherrypy3, python-genshi, python-imaging, python-yaml, python-nose, python-mox
+Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-cherrypy3 (>= 3.1.1), python-genshi (>= 0.5.1), python-imaging (>= 1.1.6), python-yaml (>= 3.08), python-nose (>= 0.11.1), python-mox (>= 0.5.1)
 Build-Depends-Indep: python-sphinx
-Homepage: http://www.sponge.org/
+Homepage: http://github.com/gabrielfalcao/sponge/tree/master
 Vcs-Git: git://github.com/gabrielfalcao/sponge.git
 Vcs-Browser: http://github.com/gabrielfalcao/sponge/tree/master
 

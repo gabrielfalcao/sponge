@@ -210,7 +210,7 @@ class SpongeConfig(object):
             fallback = lambda: cherrypy.tree.mount(root=cls(),
                                                    config=conf,
                                                    script_name=mountpoint)
-            msg = '\nWARNING: The class %s has no routes\n' % repr(cls)
+            msg = '\nWARNING: The class %s has no routes\n' % cls.__name__
             if not hasattr(cls, '__routes__'):
                 sys.stderr.write(msg)
                 fallback()
