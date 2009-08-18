@@ -32,5 +32,7 @@ tarball: test
 	@echo "Preparing tarball ..."
 	@cp -drf . ../sponge-`python -c 'import sponge; print sponge.__version__'`
 	@rm -rf sponge-`python -c 'import sponge; print sponge.__version__'`/.git
-	@tar czvf ../sponge-`python -c 'import sponge; print sponge.__version__'`.tar.gz ../sponge-`python -c 'import sponge; print sponge.__version__'`
-	@echo "Tarball at sponge-`python -c 'import sponge; print sponge.__version__'`.tar.gz"
+	@echo "Creating tarball ..."	
+	@tar czf sponge-`python -c 'import sponge; print sponge.__version__'`.tar.gz ../sponge-`python -c 'import sponge; print sponge.__version__'`
+	@rm -rf ../sponge-`python -c 'import sponge; print sponge.__version__'`
+	@echo "Tarball created at at sponge-`python -c 'import sponge; print sponge.__version__'`.tar.gz"
