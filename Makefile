@@ -42,6 +42,14 @@ tarball: test
 	@rm -rf ../${package-name}
 	@echo "Tarball created at at "${package-name}.tar.gz
 
-deb-tarball: tarball
-	@cp ${package-name}.tar.gz ${debian-tarball-name}
-	@echo "Tarball created at at "${debian-tarball-name}
+deb-tarball: test
+	@make clean
+	@echo "Preparing tarball ..."
+	@cp -drf . ../${package-name}
+	@rm -rf ../${package-name}/.git
+	@rm -rf ../${package-name}/debian
+	@rm -rf ../${package-name}/docs/_build
+	@echo "Creating tarball ..."
+	@tar czf ../${debian-tarball-name} ../${package-name}
+	@cp -drf debian ../${package-name}/debian
+	@echo "Tarball created at at ../"${debian-tarball-name}
