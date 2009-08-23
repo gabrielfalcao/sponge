@@ -18,8 +18,6 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-import os
-import sys
 from setuptools import setup, find_packages
 from sponge import __version__
 
@@ -27,9 +25,9 @@ setup(name='Sponge',
     version=__version__,
     description='A web framework aiming to get things dry, ' \
                 'built on top of CherryPy and Genshi',
-    author=u'Gabriel Falcão',
+    author='Gabriel Falcao',
     author_email='gabriel@nacaolivre.org',
-    url='http://sponge.gabrielfalcao.com',
+    url='http://gnu.gabrielfalcao.com/sponge',
     entry_points={
         'console_scripts': [
             'bob = sponge.bob:run',
