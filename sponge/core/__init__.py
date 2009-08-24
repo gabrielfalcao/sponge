@@ -157,6 +157,8 @@ class SpongeConfig(object):
         self.set_setting('tools.encode.encoding', 'utf-8')
         self.set_setting('tools.trailing_slash.on', True)
         self.set_setting('sponge', self.validator.cdict)
+        self.set_setting('sponge.root', self.fs.abspath(current_full_path))
+
         if 'extra' in self.validator.cdict:
             self.set_setting('sponge.extra', self.validator.cdict['extra'])
 

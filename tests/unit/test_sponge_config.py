@@ -103,6 +103,7 @@ def test_can_setup_all_without_routes_attr():
     sp.set_setting('tools.encode.encoding', 'utf-8')
     sp.set_setting('tools.trailing_slash.on', True)
     sp.set_setting('sponge', config_dict)
+    sp.set_setting('sponge.root', '/absolute/path')
     sp.set_setting('sponge.extra', config_dict['extra'])
     sp.set_setting('template.dir', '/path/to/project/templates')
     sp.set_setting('image.dir', '/path/to/project/images')
@@ -156,6 +157,7 @@ def test_can_setup_all_without_routes_dict():
     sp.set_setting('tools.encode.encoding', 'utf-8')
     sp.set_setting('tools.trailing_slash.on', True)
     sp.set_setting('sponge', config_dict)
+    sp.set_setting('sponge.root', '/absolute/path')
     sp.set_setting('sponge.extra', config_dict['extra'])
     sp.set_setting('template.dir', '/path/to/project/templates')
     sp.set_setting('image.dir', '/path/to/project/images')
@@ -321,9 +323,11 @@ def test_boot():
     sp.set_setting('tools.encode.encoding', 'utf-8')
     sp.set_setting('tools.trailing_slash.on', True)
     sp.set_setting('sponge', config_dict)
+    sp.set_setting('sponge.root', '/absolute/path')
     sp.set_setting('sponge.extra', config_dict['extra'])
     sp.set_setting('template.dir', '/path/to/project/templates')
     sp.set_setting('image.dir', '/path/to/project/images')
+
 
     mox.ReplayAll()
     sys.stderr = StringIO()
