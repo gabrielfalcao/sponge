@@ -64,7 +64,8 @@ class ConfigValidator(object):
 
     def __init__(self, cdict):
         if not isinstance(cdict, dict):
-            raise TypeError, 'ConfigValidator takes a dict as parameter, got None.'
+            raise TypeError, \
+                  'ConfigValidator takes a dict as parameter, got None.'
         self.cdict = cdict
 
     def validate(self):
@@ -81,7 +82,8 @@ class ConfigValidator(object):
             if option in self.mandatory and \
                 option not in keys:
                 raise RequiredOptionError, \
-                      'You get to set "%s" option within settings.yml' % option
+                      'You get to set "%s" option within settings.yml' \
+                      % option
             if option not in self.cdict.keys():
                 continue
 
@@ -149,22 +151,25 @@ class SpongeConfig(object):
             raise TypeError, 'SpongeConfig.setup_all takes a absolute ' \
                   'path, got %s.' % current_full_path
 
-        self.set_setting('server.socket_port', int(self.validator.cdict['port']))
-        self.set_setting('server.socket_host', self.validator.cdict['host'])
+        cdict = self.validator.cdict
+        sponge_root = self.fs.abspath(current_full_path)
+        self.set_setting('server.socket_port', int(cdict['port']))
+        self.set_setting('server.socket_host', cdict['host'])
         self.set_setting('tools.sessions.on', True)
         self.set_setting('tools.sessions.timeout', 60)
         self.set_setting('tools.encode.on', True)
         self.set_setting('tools.encode.encoding', 'utf-8')
         self.set_setting('tools.trailing_slash.on', True)
-        self.set_setting('sponge', self.validator.cdict)
-        self.set_setting('sponge.root', self.fs.abspath(current_full_path))
-
-        if 'extra' in self.validator.cdict:
-            self.set_setting('sponge.extra', self.validator.cdict['extra'])
+        self.set_setting('sponge', cdict)
+        self.set_setting('sponge.root', sponge_root)
+        self.set_setting('engine.autoreload_on', cdict['autoreload'])
+        if 'extra' in cdict:
+            self.set_setting('sponge.extra', cdict['extra'])
 
         application = self.validator.cdict['application']
 
-        if 'boot' in application and isinstance(application['boot'], dict):
+        if 'boot' in application and \
+               isinstance(application['boot'], dict):
             path = application['boot']['path']
             call = application['boot']['callable']
 
@@ -205,7 +210,8 @@ class SpongeConfig(object):
                 format_str = classname, application_path, unicode(e)
                 sys.stderr.write('\nSponge could not find the class %s ' \
                                  'at %s, verify if your settings.yml ' \
-                                 'is configured as well\n%s\n' % (format_str))
+                                 'is configured as well\n%s\n' % \
+                                 (format_str))
 
                 raise SystemExit(1)
 
