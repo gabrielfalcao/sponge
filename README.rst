@@ -17,6 +17,29 @@ Dependencies
  * nose_ >= 0.11.0
  * mox_ >= 0.5.1
 
+Documentation
+=============
+
+The documentation is bundle in the project, but you can see it online_.
+
+Installing
+==========
+
+Debian GNU/Linux
+^^^^^^^^^^^^^^^^
+
+If you are running Debian with unstable repositories, just run::
+   sudo aptitude install python-sponge
+
+In other systems
+^^^^^^^^^^^^^^^^
+On unix-based systems::
+   sudo python setup.py install
+
+On windows::
+   python setup.py install
+
+
 Contributing
 ============
 
@@ -39,3 +62,5 @@ Fixing bugs
 .. _Genshi: http://genshi.edgewall.org/
 .. _nose: http://code.google.com/p/python-nose/
 .. _mox: http://code.google.com/p/pymox/test
+.. _online: http://gnu.gabrielfalcao.com/projects/sponge/tutorial.html
+
