@@ -5,7 +5,6 @@ from mox import Mox
 from nose.tools import assert_equals
 from utils import assert_raises
 from sponge import core
-from sponge.core import SpongeConfig, ConfigValidator
 
 config_dict = {
     'run-as': 'wsgi',
@@ -29,25 +28,25 @@ config_dict = {
 }
 
 def test_takes_dict_on_creation():
-    cf = ConfigValidator({})
-    assert_raises(TypeError, SpongeConfig, None, cf,
+    cf = core.ConfigValidator({})
+    assert_raises(TypeError, core.SpongeConfig, None, cf,
                   exc_pattern=r'SpongeConfig parameter 1 ' \
                   'must be a dict, got None.')
-    assert_raises(TypeError, SpongeConfig, 5, cf,
+    assert_raises(TypeError, core.SpongeConfig, 5, cf,
                   exc_pattern=r'SpongeConfig parameter 1 ' \
                   'must be a dict, got 5.')
 
 def test_can_set_setting():
     d = {}
-    cf = ConfigValidator({})
-    sp = SpongeConfig(d, cf)
+    cf = core.ConfigValidator({})
+    sp = core.SpongeConfig(d, cf)
     sp.set_setting('my-setting', 'my-value')
     assert_equals(d['my-setting'], 'my-value')
 
 def test_setup_all_takes_string_path():
     d = {}
-    cf = ConfigValidator({})
-    sp = SpongeConfig(d, cf)
+    cf = core.ConfigValidator({})
+    sp = core.SpongeConfig(d, cf)
     assert_raises(TypeError, sp.setup_all, tuple(),
                   exc_pattern=r'SpongeConfig.setup_all takes a ' \
                   'string, got ().')
@@ -60,8 +59,8 @@ def test_setup_all_takes_string_path():
 
 def test_setup_all_path_must_be_absolute():
     d = {}
-    cf = ConfigValidator({})
-    sp = SpongeConfig(d, cf)
+    cf = core.ConfigValidator({})
+    sp = core.SpongeConfig(d, cf)
     assert_raises(TypeError, sp.setup_all, 'relative/path/',
                   exc_pattern=r'SpongeConfig.setup_all takes a ' \
                   'absolute path, got relative/path/.')
@@ -69,6 +68,12 @@ def test_setup_all_path_must_be_absolute():
 def test_can_setup_all_without_routes_attr():
     mox = Mox()
     d = {}
+    mox.StubOutWithMock(core, 'os')
+    mox.StubOutWithMock(core.sys, 'path')
+
+    core.os.getcwd().AndReturn('should be current working dir')
+    core.sys.path.append('should be current working dir')
+
     class_loader = core.ClassLoader
     cherrypy = core.cherrypy
     core.ClassLoader = mox.CreateMockAnything()
@@ -119,10 +124,17 @@ def test_can_setup_all_without_routes_attr():
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
         sys.stderr = sys.__stderr__
+        mox.UnsetStubs()
 
 def test_can_setup_all_without_routes_dict():
     mox = Mox()
     d = {}
+    mox.StubOutWithMock(core, 'os')
+    mox.StubOutWithMock(core.sys, 'path')
+
+    core.os.getcwd().AndReturn('should be current working dir')
+    core.sys.path.append('should be current working dir')
+
     class_loader = core.ClassLoader
     cherrypy = core.cherrypy
     core.ClassLoader = mox.CreateMockAnything()
@@ -174,10 +186,17 @@ def test_can_setup_all_without_routes_dict():
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
         sys.stderr = sys.__stderr__
+        mox.UnsetStubs()
 
 def test_setup_all_fails_on_import():
     mox = Mox()
     d = {}
+    mox.StubOutWithMock(core, 'os')
+    mox.StubOutWithMock(core.sys, 'path')
+
+    core.os.getcwd().AndReturn('should be current working dir')
+    core.sys.path.append('should be current working dir')
+
     class_loader = core.ClassLoader
     cherrypy = core.cherrypy
     core.ClassLoader = mox.CreateMockAnything()
@@ -209,10 +228,17 @@ def test_setup_all_fails_on_import():
     finally:
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
+        mox.UnsetStubs()
 
 def test_can_setup_all_with_routes():
     mox = Mox()
     d = {}
+    mox.StubOutWithMock(core, 'os')
+    mox.StubOutWithMock(core.sys, 'path')
+
+    core.os.getcwd().AndReturn('should be current working dir')
+    core.sys.path.append('should be current working dir')
+
     class_loader = core.ClassLoader
     cherrypy = core.cherrypy
     core.ClassLoader = mox.CreateMockAnything()
@@ -271,10 +297,17 @@ def test_can_setup_all_with_routes():
     finally:
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
+        mox.UnsetStubs()
 
 def test_boot():
     mox = Mox()
     d = {}
+    mox.StubOutWithMock(core, 'os')
+    mox.StubOutWithMock(core.sys, 'path')
+
+    core.os.getcwd().AndReturn('should be current working dir')
+    core.sys.path.append('should be current working dir')
+
     class_loader = core.ClassLoader
     cherrypy = core.cherrypy
     core.ClassLoader = mox.CreateMockAnything()
@@ -342,4 +375,4 @@ def test_boot():
         core.ClassLoader = class_loader
         core.cherrypy = cherrypy
         sys.stderr = sys.__stderr__
-
+        mox.UnsetStubs()

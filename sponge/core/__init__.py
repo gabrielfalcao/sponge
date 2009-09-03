@@ -143,6 +143,7 @@ class SpongeConfig(object):
         self.d[key] = value
 
     def setup_all(self, current_full_path):
+        sys.path.append(os.getcwd())
         if not isinstance(current_full_path, basestring):
             raise TypeError, 'SpongeConfig.setup_all takes a string, ' \
                   'got %s.' % repr(current_full_path)
