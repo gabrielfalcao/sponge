@@ -18,11 +18,10 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 import cherrypy
-
 from mox import Mox
-from nose.tools import assert_equal
+from nose.tools import assert_equals
 from utils import assert_raises
-from sponge.helpers import pagination
+from sponge.helpers import pagination, slugify
 
 class TestPaginator:
     def check_paginator(self, params, output):
@@ -42,7 +41,7 @@ class TestPaginator:
         message upon test failure.
         """
         got = getattr(paginator, name)
-        assert_equal(expected, got,
+        assert_equals(expected, got,
             "For '%s', expected %s but got %s.  pagination.Paginator parameters were: %s"
             % (name, expected, got, params))
 
@@ -123,9 +122,9 @@ class TestPaginator:
         start, end = indexes
         msg = ("For %s of page %s, expected %s but got %s."
                " pagination.Paginator parameters were: %s")
-        assert_equal(start, page.start_index(),
+        assert_equals(start, page.start_index(),
             msg % ('start index', page_num, start, page.start_index(), params))
-        assert_equal(end, page.end_index(),
+        assert_equals(end, page.end_index(),
             msg % ('end index', page_num, end, page.end_index(), params))
 
     def test_page_indexes(self):
@@ -179,7 +178,7 @@ class TestPaginator:
             num_pages = 10
 
         page = pagination.Page([], 2, PaginatorStub)
-        assert_equal('<Page 2 of 10>', repr(page))
+        assert_equals('<Page 2 of 10>', repr(page))
 
     def test_has_next_true(self):
         class PaginatorStub:
@@ -295,3 +294,22 @@ class TestPaginator:
         assert_raises(pagination.EmptyPage,
                       p.validate_number,
                       1)
+
+class TestSlugify:
+    def test_simple_spaces(self):
+        "slugify should replace blank spaces with a dash"
+        original = "simple string with spaces"
+        assert_equals(slugify(original),
+                      "simple-string-with-spaces")
+
+    def test_special_chars(self):
+        "slugify should remove any special chars"
+        original = "here!@#$%*-()_+and{}[]-~^`'´/?\|there"
+        got = slugify(original)
+        assert_equals(got, "here-and-there")
+
+    def test_my_name(self):
+        "slugify should be able to slugify my name :)"
+        original = "Gabriel Falc\xc3\xa3o"
+        got = slugify(original)
+        assert_equals(got, "gabriel-falcao")

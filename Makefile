@@ -19,12 +19,12 @@ test:
 
 unit:
 	@echo "Running unit tests ..."
-	@nosetests -sd --with-coverage --cover-package=sponge tests/unit
+	@nosetests -sdv --with-coverage --cover-package=sponge tests/unit
 	@echo "Done."
 
 functional:
 	@echo "Running functional tests ..."
-	@nosetests -sd --with-coverage --cover-package=sponge tests/functional
+	@nosetests -sdv --with-coverage --cover-package=sponge tests/functional
 	@echo "Done."
 
 build: test
