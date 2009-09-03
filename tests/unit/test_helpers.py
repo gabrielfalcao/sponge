@@ -310,6 +310,12 @@ class TestSlugify:
 
     def test_my_name(self):
         "slugify should be able to slugify my name :)"
-        original = "Gabriel Falc\xc3\xa3o"
+        original = "Gabriel Falcão"
         got = slugify(original)
         assert_equals(got, "gabriel-falcao")
+
+    def test_full_accents(self):
+        "slugify should be able to slugify a much accented sentence"
+        original = "Ação é bordô à síri tãmisa"
+        got = slugify(original)
+        assert_equals(got, "acao-e-bordo-a-siri-tamisa")
