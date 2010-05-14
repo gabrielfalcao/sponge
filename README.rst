@@ -1,3 +1,8 @@
+.. Note:
+
+    this project is no longer maintained, since I've figured out I
+    Django is the way to go :)
+
 Sponge - Web Framework
 ======================
 
